@@ -82,6 +82,21 @@ def create_app(config_override: dict = None) -> Flask:
     app.register_blueprint(transacoes_bp)
     app.register_blueprint(api_bp)
     
+    # Rota de Debug de Configuração (REMOVER EM PRODUÇÃO DEPOIS)
+    @app.route('/config-check')
+    def config_check():
+        groq_key = app.config.get('GROQ_API_KEY', '')
+        status = "✅ Configurada" if groq_key else "❌ Não configurada"
+        preview = f"{groq_key[:4]}..." if groq_key else "N/A"
+        
+        return jsonify({
+            'status_groq': status,
+            'preview_key': preview,
+            'cwd': os.getcwd(),
+            'env_loc': os.path.join(Config.BASE_DIR, '.env'),
+            'env_exists': os.path.exists(os.path.join(Config.BASE_DIR, '.env'))
+        })
+    
     # Tratamento de erros
     @app.errorhandler(413)
     def request_entity_too_large(error):

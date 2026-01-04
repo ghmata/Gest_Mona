@@ -16,7 +16,9 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 # Carrega variáveis de ambiente do arquivo .env
-load_dotenv()
+# Carrega variáveis de ambiente do arquivo .env
+basedir = os.path.abspath(os.path.dirname(__file__))
+load_dotenv(os.path.join(basedir, '.env'))
 
 # Configuração de logging
 logging.basicConfig(

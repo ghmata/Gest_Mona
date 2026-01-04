@@ -149,11 +149,20 @@ class GroqService:
         
         if Config.GROQ_API_KEY:
             try:
+                # DEBUG FORÇADO PARA LOGS DO SERVIDOR
+                masked_key = f"{Config.GROQ_API_KEY[:4]}...{Config.GROQ_API_KEY[-4:]}" if len(Config.GROQ_API_KEY) > 8 else "CURTA"
+                print(f"--- DEBUG GROQ ---")
+                print(f"Tentando inicializar com chave: {masked_key}")
+                print(f"Tamanho da chave: {len(Config.GROQ_API_KEY)}")
+                
                 self.client = Groq(api_key=Config.GROQ_API_KEY)
                 logger.info(f"Cliente Groq inicializado com modelo {self.model}")
+                print(f"--- SUCESSO GROQ ---")
             except Exception as e:
                 logger.error(f"Erro ao inicializar cliente Groq: {e}")
+                print(f"--- ERRO GROQ: {str(e)} ---")
         else:
+            print("--- ERRO: GROQ_API_KEY VAZIA OU NAO ENCONTRADA ---")
             logger.warning(
                 "GROQ_API_KEY não configurada. "
                 "O serviço de OCR não funcionará."
