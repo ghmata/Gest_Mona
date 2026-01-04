@@ -9,6 +9,7 @@ notas fiscais e extrair dados estruturados usando o modelo LLaMA Vision.
 import base64
 import json
 import logging
+import os
 import re
 from typing import Optional
 
