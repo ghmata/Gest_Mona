@@ -1,0 +1,750 @@
+{% extends 'base_dashboard.html' %}
+
+{% block title %}Dashboard - {{ mes_nome }} {{ ano_atual }}{% endblock %}
+
+{% block head %}
+{{ super() }}
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block dashboard_content %}
+<!-- Navegação de ANO -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <a href="{{ url_for('main.dashboard', mes=mes_atual, ano=ano_atual - 1) }}" class="btn btn-outline-primary"
+        aria-label="Ano anterior" title="Ir para {{ ano_atual - 1 }}">
+        <i class="bi bi-chevron-left"></i>
+    </a>
+    <div class="text-center">
+        <h4 class="mb-0">{{ ano_atual }}</h4>
+        <small class="text-muted">{{ total_transacoes }} transações</small>
+    </div>
+    <a href="{{ url_for('main.dashboard', mes=mes_atual, ano=ano_atual + 1) }}" class="btn btn-outline-primary"
+        aria-label="Próximo ano" title="Ir para {{ ano_atual + 1 }}">
+        <i class="bi bi-chevron-right"></i>
+    </a>
+</div>
+
+<!-- Botões de Exportação -->
+<div class="d-flex justify-content-center gap-2 mb-4">
+    <a href="{{ url_for('main.gerar_relatorio', mes=mes_atual, ano=ano_atual) }}" class="btn btn-sm btn-outline-danger"
+        title="Baixar PDF">
+        <i class="bi bi-file-pdf"></i> PDF
+    </a>
+    <a href="{{ url_for('main.exportar_csv', mes=mes_atual, ano=ano_atual) }}" class="btn btn-sm btn-outline-success"
+        title="Baixar CSV/Excel">
+        <i class="bi bi-file-earmark-spreadsheet"></i> CSV
+    </a>
+</div>
+
+<!-- Cards de Métricas -->
+<div class="row g-3 mb-4">
+    <!-- Card Receita -->
+    <div class="col-4">
+        <div class="card metric-card text-center h-100 border-success">
+            <div class="card-body p-2">
+                <i class="bi bi-arrow-up-circle-fill text-success fs-3"></i>
+                <p class="text-muted small mb-1">Receita</p>
+                <h5 class="text-success mb-0">
+                    R$ {{ "%.2f"|format(faturamento) }}
+                </h5>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card Despesas -->
+    <div class="col-4">
+        <div class="card metric-card text-center h-100 border-danger">
+            <div class="card-body p-2">
+                <i class="bi bi-arrow-down-circle-fill text-danger fs-3"></i>
+                <p class="text-muted small mb-1">Despesas</p>
+                <h5 class="text-danger mb-0">
+                    R$ {{ "%.2f"|format(gastos) }}
+                </h5>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card Lucro -->
+    <div class="col-4">
+        <div
+            class="card metric-card text-center h-100 {% if lucro >= 0 %}border-primary{% else %}border-warning{% endif %}">
+            <div class="card-body p-2">
+                <i
+                    class="bi bi-graph-up-arrow {% if lucro >= 0 %}text-primary{% else %}text-warning{% endif %} fs-3"></i>
+                <p class="text-muted small mb-1">Lucro</p>
+                <h5 class="{% if lucro >= 0 %}text-primary{% else %}text-warning{% endif %} mb-0">
+                    R$ {{ "%.2f"|format(lucro) }}
+                </h5>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Abas: Despesas, Receitas, Histórico -->
+<div class="card mb-4">
+    <div class="card-header p-0">
+        <ul class="nav nav-tabs card-header-tabs">
+            <li class="nav-item">
+                <a class="nav-link {% if aba_ativa == 'despesas' %}active{% endif %}"
+                    href="{{ url_for('main.dashboard', mes=mes_atual, ano=ano_atual, aba='despesas') }}">
+                    <i class="bi bi-arrow-down-circle text-danger"></i> Despesas
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if aba_ativa == 'receitas' %}active{% endif %}"
+                    href="{{ url_for('main.dashboard', mes=mes_atual, ano=ano_atual, aba='receitas') }}">
+                    <i class="bi bi-arrow-up-circle text-success"></i> Receitas
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if aba_ativa == 'historico' %}active{% endif %}"
+                    href="{{ url_for('main.dashboard', mes=mes_atual, ano=ano_atual, aba='historico') }}">
+                    <i class="bi bi-clock-history text-primary"></i> Histórico
+                </a>
+            </li>
+        </ul>
+    </div>
+    <div class="card-body">
+        <!-- Conteúdo para aba Despesas -->
+        {% if aba_ativa == 'despesas' %}
+        {% if gastos_por_categoria %}
+        <div class="row align-items-center">
+            <div class="col-lg-6 mb-3 mb-lg-0">
+                <canvas id="grafico-despesas" style="max-height: 250px;"
+                    data-valores='{{ gastos_por_categoria | tojson }}'></canvas>
+            </div>
+            <div class="col-lg-6">
+                <p class="text-muted small mb-2"><i class="bi bi-hand-index"></i> Clique em uma categoria para ver
+                    detalhes</p>
+                <ul class="list-group list-group-flush">
+                    {% for categoria, valor in gastos_por_categoria.items() %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-2 categoria-clicavel"
+                        style="cursor: pointer;" data-categoria="{{ categoria }}" title="Clique para ver subcategorias">
+                        <span class="d-flex align-items-center">
+                            <span class="badge-dot badge-{{ categoria|replace(' ', '-') }} me-2"></span>
+                            {{ categoria }}
+                            <i class="bi bi-chevron-right text-muted ms-1 small"></i>
+                        </span>
+                        <strong class="text-danger">R$ {{ "%.2f"|format(valor) }}</strong>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <!-- Mini Dashboard de Subcategorias -->
+        <div id="mini-dashboard-container" class="mt-4 p-3 border rounded bg-light" style="display: none;">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 id="mini-dashboard-titulo" class="mb-0">
+                    <i class="bi bi-diagram-3"></i> Detalhamento
+                </h6>
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="fecharMiniDashboard()">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div id="mini-dashboard-loading" class="text-center py-3" style="display: none;">
+                <div class="spinner-border spinner-border-sm text-primary"></div>
+                <span class="ms-2">Carregando...</span>
+            </div>
+            <div id="mini-dashboard-conteudo">
+                <div class="row">
+                    <div class="col-md-5 mb-3 mb-md-0">
+                        <canvas id="grafico-subcategorias" style="max-height: 180px;"></canvas>
+                    </div>
+                    <div class="col-md-7">
+                        <ul id="lista-subcategorias" class="list-group list-group-flush small">
+                            <!-- Preenchido via JavaScript -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% else %}
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-inbox fs-1"></i>
+            <p class="mb-0">Nenhuma despesa registrada neste mês.</p>
+        </div>
+        {% endif %}
+
+        <!-- Conteúdo para aba Receitas -->
+        {% elif aba_ativa == 'receitas' %}
+        {% if receitas_por_categoria %}
+        <div class="row align-items-center">
+            <div class="col-lg-6 mb-3 mb-lg-0">
+                <canvas id="grafico-receitas" style="max-height: 250px;"
+                    data-valores='{{ receitas_por_categoria | tojson }}'></canvas>
+            </div>
+            <div class="col-lg-6">
+                <ul class="list-group list-group-flush">
+                    {% for categoria, valor in receitas_por_categoria.items() %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-2">
+                        <span class="d-flex align-items-center">
+                            <span class="badge-dot badge-receita-{{ categoria|replace(' ', '-') }} me-2"></span>
+                            {{ categoria }}
+                        </span>
+                        <strong class="text-success">R$ {{ "%.2f"|format(valor) }}</strong>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% else %}
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-inbox fs-1"></i>
+            <p class="mb-0">Nenhuma receita registrada neste mês.</p>
+        </div>
+        {% endif %}
+
+        <!-- Conteúdo para aba Histórico -->
+        {% else %}
+        <div class="text-center py-4">
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <h6 class="text-muted mb-3">Resumo do Mês</h6>
+                    <div class="d-flex justify-content-around">
+                        <div>
+                            <i class="bi bi-arrow-up-circle text-success fs-4"></i>
+                            <p class="mb-0 small text-muted">Receitas</p>
+                            <strong class="text-success">R$ {{ "%.2f"|format(faturamento) }}</strong>
+                        </div>
+                        <div>
+                            <i class="bi bi-arrow-down-circle text-danger fs-4"></i>
+                            <p class="mb-0 small text-muted">Despesas</p>
+                            <strong class="text-danger">R$ {{ "%.2f"|format(gastos) }}</strong>
+                        </div>
+                        <div>
+                            <i class="bi bi-graph-up-arrow text-primary fs-4"></i>
+                            <p class="mb-0 small text-muted">Lucro</p>
+                            <strong class="{% if lucro >= 0 %}text-primary{% else %}text-warning{% endif %}">R$ {{
+                                "%.2f"|format(lucro) }}</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Transações -->
+<div class="card mb-4" id="transacoes">
+    <div class="card-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <span><i class="bi bi-list-ul"></i> Transações</span>
+            <div class="d-flex align-items-center gap-2">
+                <!-- Toggle Busca Avançada -->
+                <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#buscaAvancada">
+                    <i class="bi bi-funnel"></i> Filtros
+                </button>
+                <!-- Seletor de itens por página -->
+                <select id="perPageSelect" class="form-select form-select-sm" style="width: auto;">
+                    <option value="10" {% if per_page==10 %}selected{% endif %}>10</option>
+                    <option value="25" {% if per_page==25 %}selected{% endif %}>25</option>
+                    <option value="50" {% if per_page==50 %}selected{% endif %}>50</option>
+                </select>
+                <span class="badge bg-primary">{{ total_transacoes }}/{{ total_transacoes_mes }}</span>
+            </div>
+        </div>
+
+        <!-- Busca Avançada (Colapsável) -->
+        <div class="collapse {% if busca or busca_categoria or busca_tipo or busca_valor_min or busca_valor_max or busca_data_inicio or busca_data_fim %}show{% endif %}"
+            id="buscaAvancada">
+            <form method="GET" action="{{ url_for('main.dashboard') }}#transacoes" class="mt-3">
+                <input type="hidden" name="mes" value="{{ mes_atual }}">
+                <input type="hidden" name="ano" value="{{ ano_atual }}">
+                <input type="hidden" name="aba" value="{{ aba_ativa }}">
+                <input type="hidden" name="per_page" value="{{ per_page }}">
+                <input type="hidden" name="page" value="1">
+
+                <div class="row g-2">
+                    <!-- Busca por descrição -->
+                    <div class="col-12 col-md-3">
+                        <input type="text" class="form-control form-control-sm" name="busca"
+                            placeholder="Buscar descrição..." value="{{ busca or '' }}">
+                    </div>
+                    <!-- Categoria -->
+                    <div class="col-4 col-md-2">
+                        <select class="form-select form-select-sm" name="categoria" id="filtroCategoria">
+                            <option value="">Categoria</option>
+                            <optgroup label="Despesas" id="optDespesas">
+                                {% for cat in categorias %}
+                                <option value="{{ cat }}" {% if busca_categoria==cat %}selected{% endif %}>{{ cat }}
+                                </option>
+                                {% endfor %}
+                            </optgroup>
+                            <optgroup label="Receitas" id="optReceitas">
+                                <option value="Vendas" {% if busca_categoria=='Vendas' %}selected{% endif %}>Vendas
+                                </option>
+                                <option value="Caixa" {% if busca_categoria=='Caixa' %}selected{% endif %}>Caixa
+                                </option>
+                                <option value="PIX" {% if busca_categoria=='PIX' %}selected{% endif %}>PIX</option>
+                                <option value="Cartão" {% if busca_categoria=='Cartão' %}selected{% endif %}>Cartão
+                                </option>
+                                <option value="Transferência" {% if busca_categoria=='Transferência' %}selected{% endif
+                                    %}>Transferência</option>
+                                <option value="Outros" {% if busca_categoria=='Outros' %}selected{% endif %}>Outros
+                                </option>
+                            </optgroup>
+                        </select>
+                    </div>
+                    <!-- Subcategoria -->
+                    <div class="col-4 col-md-2">
+                        <select class="form-select form-select-sm" name="subcategoria" id="filtroSubcategoria">
+                            <option value="">Subcategoria</option>
+                            <!-- Populado dinamicamente pelo JavaScript -->
+                        </select>
+                    </div>
+                    <!-- Tipo -->
+                    <div class="col-4 col-md-2">
+                        <select class="form-select form-select-sm" name="tipo" id="filtroTipo">
+                            <option value="">Tipo</option>
+                            <option value="RECEITA" {% if busca_tipo=='RECEITA' %}selected{% endif %}>Receita</option>
+                            <option value="DESPESA" {% if busca_tipo=='DESPESA' %}selected{% endif %}>Despesa</option>
+                        </select>
+                    </div>
+                    <!-- Valor min/max -->
+                    <div class="col-6 col-md-2">
+                        <input type="number" step="0.01" class="form-control form-control-sm" name="valor_min"
+                            placeholder="Valor mín" value="{{ busca_valor_min or '' }}">
+                    </div>
+                    <div class="col-6 col-md-2">
+                        <input type="number" step="0.01" class="form-control form-control-sm" name="valor_max"
+                            placeholder="Valor máx" value="{{ busca_valor_max or '' }}">
+                    </div>
+                </div>
+
+                <div class="row g-2 mt-1">
+                    <!-- Data início/fim -->
+                    <div class="col-6 col-md-3">
+                        <input type="date" class="form-control form-control-sm" name="data_inicio"
+                            value="{{ busca_data_inicio or '' }}">
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <input type="date" class="form-control form-control-sm" name="data_fim"
+                            value="{{ busca_data_fim or '' }}">
+                    </div>
+                    <!-- Botões -->
+                    <div class="col-12 col-md-6 d-flex gap-2">
+                        <button type="submit" class="btn btn-sm btn-primary flex-grow-1">
+                            <i class="bi bi-search"></i> Buscar
+                        </button>
+                        <a href="{{ url_for('main.dashboard', mes=mes_atual, ano=ano_atual, per_page=per_page) }}"
+                            class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-x-lg"></i> Limpar
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card-body p-0">
+        {% if transacoes_recentes %}
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 60px;">Data</th>
+                        <th>Descrição</th>
+                        <th style="width: 120px;">Categoria</th>
+                        <th class="text-end" style="width: 100px;">Valor</th>
+                        <th style="width: 80px;">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in transacoes_recentes %}
+                    <tr id="transacao-{{ t.id }}">
+                        <td class="text-muted small">{{ t.data_formatada }}</td>
+                        <td class="text-truncate" style="max-width: 120px;">
+                            {{ t.descricao or t.estabelecimento or '-' }}
+                        </td>
+                        <td>
+                            <span class="badge badge-cat badge-{{ t.categoria|replace(' ', '-') }}">
+                                {{ t.categoria }}
+                            </span>
+                            {% if t.subcategoria %}
+                            <br><small class="text-muted">{{ t.subcategoria }}</small>
+                            {% endif %}
+                        </td>
+                        <td
+                            class="text-end fw-bold {% if t.tipo == 'RECEITA' %}text-success{% else %}text-danger{% endif %}">
+                            {% if t.tipo == 'RECEITA' %}+{% else %}-{% endif %}
+                            R$ {{ "%.2f"|format(t.valor) }}
+                        </td>
+                        <td class="text-nowrap">
+                            <button type="button" class="btn btn-sm btn-outline-primary btn-editar" data-id="{{ t.id }}"
+                                data-tipo="{{ t.tipo }}" data-categoria="{{ t.categoria }}"
+                                data-subcategoria="{{ t.subcategoria or '' }}" data-valor="{{ t.valor }}"
+                                data-data="{{ t.data[:10] if t.data else '' }}" data-descricao="{{ t.descricao or '' }}"
+                                data-estabelecimento="{{ t.estabelecimento or '' }}" title="Editar">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-danger btn-excluir" data-id="{{ t.id }}"
+                                title="Excluir">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Paginação Numerada -->
+        {% if total_pages > 1 %}
+        <div class="d-flex justify-content-between align-items-center p-3 border-top">
+            <span class="text-muted small">
+                Página {{ page }} de {{ total_pages }}
+            </span>
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    <!-- Anterior -->
+                    <li class="page-item {% if not has_prev %}disabled{% endif %}">
+                        <a class="page-link"
+                            href="{{ url_for('main.dashboard', mes=mes_atual, ano=ano_atual, aba=aba_ativa, page=page-1, per_page=per_page, busca=busca, categoria=busca_categoria, tipo=busca_tipo, valor_min=busca_valor_min, valor_max=busca_valor_max, data_inicio=busca_data_inicio, data_fim=busca_data_fim) }}#transacoes">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+
+                    <!-- Números de página -->
+                    {% for p in paginas_visiveis %}
+                    {% if p == '...' %}
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% elif p == page %}
+                    <li class="page-item active"><span class="page-link">{{ p }}</span></li>
+                    {% else %}
+                    <li class="page-item">
+                        <a class="page-link"
+                            href="{{ url_for('main.dashboard', mes=mes_atual, ano=ano_atual, aba=aba_ativa, page=p, per_page=per_page, busca=busca, categoria=busca_categoria, tipo=busca_tipo, valor_min=busca_valor_min, valor_max=busca_valor_max, data_inicio=busca_data_inicio, data_fim=busca_data_fim) }}#transacoes">{{
+                            p }}</a>
+                    </li>
+                    {% endif %}
+                    {% endfor %}
+
+                    <!-- Próximo -->
+                    <li class="page-item {% if not has_next %}disabled{% endif %}">
+                        <a class="page-link"
+                            href="{{ url_for('main.dashboard', mes=mes_atual, ano=ano_atual, aba=aba_ativa, page=page+1, per_page=per_page, busca=busca, categoria=busca_categoria, tipo=busca_tipo, valor_min=busca_valor_min, valor_max=busca_valor_max, data_inicio=busca_data_inicio, data_fim=busca_data_fim) }}#transacoes">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+
+        {% else %}
+        <div class="text-center py-4 text-muted">
+            <i class="bi bi-journal-x fs-3"></i>
+            <p class="mb-0">Nenhuma transação encontrada.</p>
+            {% if busca or busca_categoria or busca_tipo %}
+            <a href="{{ url_for('main.dashboard', mes=mes_atual, ano=ano_atual, aba=aba_ativa) }}"
+                class="btn btn-sm btn-outline-primary mt-2">
+                Limpar filtros
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Botões de Ação -->
+<div class="d-grid gap-2">
+    <a href="{{ url_for('main.gerar_relatorio', mes=mes_atual, ano=ano_atual) }}"
+        class="btn btn-outline-primary btn-lg">
+        <i class="bi bi-file-earmark-pdf"></i> Baixar Relatório PDF
+    </a>
+    <a href="{{ url_for('main.home') }}" class="btn btn-primary">
+        <i class="bi bi-plus-lg"></i> Nova Transação
+    </a>
+</div>
+
+<!-- Modal de Edição -->
+<div class="modal fade" id="modalEditar" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-pencil"></i> Editar Transação</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formEditar">
+                    <input type="hidden" id="editId">
+                    <input type="hidden" id="editTipo">
+
+                    <div class="mb-3">
+                        <label class="form-label">Categoria</label>
+                        <select class="form-select" id="editCategoria">
+                            <optgroup label="Despesas">
+                                {% for cat in categorias %}
+                                <option value="{{ cat }}">{{ cat }}</option>
+                                {% endfor %}
+                            </optgroup>
+                            <optgroup label="Receitas">
+                                <option value="Vendas">Vendas</option>
+                                <option value="PIX">PIX</option>
+                                <option value="Cartão">Cartão</option>
+                                <option value="Transferência">Transferência</option>
+                                <option value="Outros">Outros</option>
+                            </optgroup>
+                        </select>
+                    </div>
+
+                    <div class="mb-3" id="editSubcategoriaContainer">
+                        <label class="form-label">Subcategoria</label>
+                        <select class="form-select" id="editSubcategoria">
+                            <option value="">-- Selecione --</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Data</label>
+                        <input type="date" class="form-control" id="editData">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Valor (R$)</label>
+                        <input type="number" step="0.01" min="0.01" class="form-control" id="editValor">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Descrição</label>
+                        <input type="text" class="form-control" id="editDescricao" maxlength="200">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Estabelecimento</label>
+                        <input type="text" class="form-control" id="editEstabelecimento" maxlength="100">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btnSalvarEdicao">
+                    <i class="bi bi-check-lg"></i> Salvar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmação de Exclusão -->
+<div class="modal fade" id="modalExcluir" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content text-center">
+            <div class="modal-body p-4">
+                <i class="bi bi-shield-lock text-warning" style="font-size: 3rem;"></i>
+                <h5 class="mt-3">Excluir transação?</h5>
+                <p class="text-muted small">Esta ação não pode ser desfeita.</p>
+                <div class="mt-3">
+                    <label class="form-label small text-muted">Digite a senha para confirmar:</label>
+                    <input type="password" class="form-control form-control-sm text-center" id="senhaExclusao"
+                        placeholder="Senha" maxlength="20">
+                    <div id="erroSenha" class="text-danger small mt-1" style="display: none;">
+                        Senha incorreta!
+                    </div>
+                </div>
+                <input type="hidden" id="excluirId">
+            </div>
+            <div class="modal-footer justify-content-center border-0 pt-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="btnConfirmarExclusao">
+                    <i class="bi bi-trash"></i> Excluir
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script>
+    // Estrutura de subcategorias (carregada do backend)
+    const CATEGORIAS_SUBCATEGORIAS = {{ categorias_subcategorias | default ({}) | tojson }};
+    const BUSCA_SUBCATEGORIA_ATUAL = '{{ busca_subcategoria or "" }}';
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const modalEditar = new bootstrap.Modal(document.getElementById('modalEditar'));
+        const modalExcluir = new bootstrap.Modal(document.getElementById('modalExcluir'));
+
+        // ====================================
+        // Filtro de Subcategoria Dinâmico
+        // ====================================
+        const filtroCategoria = document.getElementById('filtroCategoria');
+        const filtroSubcategoria = document.getElementById('filtroSubcategoria');
+
+        function popularSubcategoriasFiltro(categoriaSelecionada, subcategoriaAtual) {
+            if (!filtroSubcategoria) return;
+
+            filtroSubcategoria.innerHTML = '<option value="">Subcategoria</option>';
+
+            const subcategorias = CATEGORIAS_SUBCATEGORIAS[categoriaSelecionada] || [];
+            subcategorias.forEach(sub => {
+                const option = document.createElement('option');
+                option.value = sub;
+                option.textContent = sub;
+                if (sub === subcategoriaAtual) option.selected = true;
+                filtroSubcategoria.appendChild(option);
+            });
+        }
+
+        // Inicializar com valor atual
+        if (filtroCategoria && filtroCategoria.value) {
+            popularSubcategoriasFiltro(filtroCategoria.value, BUSCA_SUBCATEGORIA_ATUAL);
+        }
+
+        // Atualizar quando categoria mudar
+        if (filtroCategoria) {
+            filtroCategoria.addEventListener('change', function () {
+                popularSubcategoriasFiltro(this.value, '');
+            });
+        }
+
+        // ====================================
+        // Botões Editar
+        document.querySelectorAll('.btn-editar').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const id = this.dataset.id;
+                const tipo = this.dataset.tipo;
+                const categoria = this.dataset.categoria;
+                const subcategoria = this.dataset.subcategoria;
+                const valor = this.dataset.valor;
+                const data = this.dataset.data;
+                const descricao = this.dataset.descricao;
+                const estabelecimento = this.dataset.estabelecimento;
+
+                document.getElementById('editId').value = id;
+                document.getElementById('editTipo').value = tipo;
+                document.getElementById('editCategoria').value = categoria;
+                document.getElementById('editData').value = data;
+                document.getElementById('editValor').value = valor;
+                document.getElementById('editDescricao').value = descricao;
+                document.getElementById('editEstabelecimento').value = estabelecimento;
+
+                // Atualiza subcategorias
+                atualizarSubcategorias(categoria, subcategoria);
+
+                // Mostra/esconde container de subcategoria baseado no tipo
+                document.getElementById('editSubcategoriaContainer').style.display =
+                    tipo === 'DESPESA' ? 'block' : 'none';
+
+                modalEditar.show();
+            });
+        });
+
+        // Mudança de categoria atualiza subcategorias
+        document.getElementById('editCategoria').addEventListener('change', function () {
+            atualizarSubcategorias(this.value, '');
+        });
+
+        function atualizarSubcategorias(categoria, subcategoriaAtual) {
+            const select = document.getElementById('editSubcategoria');
+            select.innerHTML = '<option value="">-- Selecione --</option>';
+
+            const subcategorias = CATEGORIAS_SUBCATEGORIAS[categoria] || [];
+            subcategorias.forEach(sub => {
+                const option = document.createElement('option');
+                option.value = sub;
+                option.textContent = sub;
+                if (sub === subcategoriaAtual) option.selected = true;
+                select.appendChild(option);
+            });
+        }
+
+        // Salvar edição
+        document.getElementById('btnSalvarEdicao').addEventListener('click', async function () {
+            const id = document.getElementById('editId').value;
+            const dados = {
+                categoria: document.getElementById('editCategoria').value,
+                subcategoria: document.getElementById('editSubcategoria').value,
+                data: document.getElementById('editData').value,
+                valor: parseFloat(document.getElementById('editValor').value),
+                descricao: document.getElementById('editDescricao').value,
+                estabelecimento: document.getElementById('editEstabelecimento').value
+            };
+
+            try {
+                this.disabled = true;
+                this.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+                const response = await fetch(`/transacao/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dados)
+                });
+
+                const result = await response.json();
+
+                if (result.sucesso) {
+                    modalEditar.hide();
+                    location.reload();
+                } else {
+                    alert('Erro: ' + result.erro);
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Erro ao salvar.');
+            } finally {
+                this.disabled = false;
+                this.innerHTML = '<i class="bi bi-check-lg"></i> Salvar';
+            }
+        });
+
+        // Botões Excluir
+        document.querySelectorAll('.btn-excluir').forEach(btn => {
+            btn.addEventListener('click', function () {
+                document.getElementById('excluirId').value = this.dataset.id;
+                document.getElementById('senhaExclusao').value = '';
+                document.getElementById('erroSenha').style.display = 'none';
+                modalExcluir.show();
+            });
+        });
+
+        // Confirmar exclusão
+        document.getElementById('btnConfirmarExclusao').addEventListener('click', async function () {
+            const id = document.getElementById('excluirId').value;
+            const senha = document.getElementById('senhaExclusao').value;
+            const erroSenha = document.getElementById('erroSenha');
+
+            if (!senha) {
+                erroSenha.textContent = 'Digite a senha!';
+                erroSenha.style.display = 'block';
+                return;
+            }
+
+            try {
+                this.disabled = true;
+                this.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+                const response = await fetch(`/transacao/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ senha: senha })
+                });
+                const result = await response.json();
+
+                if (result.sucesso) {
+                    modalExcluir.hide();
+                    document.getElementById('transacao-' + id).remove();
+                } else {
+                    erroSenha.textContent = result.erro || 'Senha incorreta!';
+                    erroSenha.style.display = 'block';
+                    document.getElementById('senhaExclusao').value = '';
+                    document.getElementById('senhaExclusao').focus();
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Erro ao excluir.');
+            } finally {
+                this.disabled = false;
+                this.innerHTML = '<i class="bi bi-trash"></i> Excluir';
+            }
+        });
+    });
+</script>
+{% endblock %}

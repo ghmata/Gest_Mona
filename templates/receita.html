@@ -1,0 +1,300 @@
+{% extends 'base.html' %}
+
+{% block title %}Lançar Receita - GestorBot{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header bg-success text-white">
+        <h5 class="mb-0"><i class="bi bi-cash-stack"></i> Registrar Receita</h5>
+    </div>
+    <div class="card-body">
+        <form id="form-receita">
+            <input type="hidden" name="tipo" value="RECEITA">
+            <input type="hidden" id="comprovante-url" name="comprovante_url">
+
+            <!-- Comprovante (opcional) - Agora no topo -->
+            <div class="mb-3">
+                <label class="form-label">Comprovante (opcional)</label>
+                <div class="d-grid">
+                    <button type="button" id="btn-anexar" class="btn btn-outline-primary btn-lg">
+                        <i class="bi bi-camera"></i> Anexar Comprovante (PIX/Transferência)
+                    </button>
+                </div>
+                <input type="file" id="input-comprovante" accept="image/*,.pdf" class="d-none">
+
+                <!-- Loading -->
+                <div id="loading-ocr" class="text-center py-3 d-none">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="text-muted mb-0 mt-2">Analisando comprovante...</p>
+                </div>
+
+                <!-- Preview do comprovante -->
+                <div id="preview-comprovante" class="mt-2 d-none">
+                    <div class="alert alert-success d-flex align-items-center py-2">
+                        <i class="bi bi-check-circle me-2"></i>
+                        <span id="nome-comprovante">Arquivo anexado</span>
+                        <button type="button" id="btn-remover" class="btn btn-sm btn-outline-danger ms-auto">
+                            <i class="bi bi-x"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tipo de Recebimento -->
+            <div class="mb-3">
+                <label class="form-label">Tipo de Recebimento</label>
+                <div class="d-flex flex-wrap gap-2">
+                    <input type="radio" class="btn-check" name="categoria" id="tipo-caixa" value="Vendas" checked>
+                    <label class="btn btn-outline-success" for="tipo-caixa">
+                        <i class="bi bi-cash-coin"></i> Caixa
+                    </label>
+
+                    <input type="radio" class="btn-check" name="categoria" id="tipo-pix" value="PIX">
+                    <label class="btn btn-outline-success" for="tipo-pix">
+                        <i class="bi bi-qr-code"></i> PIX
+                    </label>
+
+                    <input type="radio" class="btn-check" name="categoria" id="tipo-cartao" value="Cartão">
+                    <label class="btn btn-outline-success" for="tipo-cartao">
+                        <i class="bi bi-credit-card"></i> Cartão
+                    </label>
+
+                    <input type="radio" class="btn-check" name="categoria" id="tipo-transferencia"
+                        value="Transferência">
+                    <label class="btn btn-outline-success" for="tipo-transferencia">
+                        <i class="bi bi-bank"></i> Transferência
+                    </label>
+
+                    <input type="radio" class="btn-check" name="categoria" id="tipo-outro" value="Outros">
+                    <label class="btn btn-outline-success" for="tipo-outro">
+                        <i class="bi bi-three-dots"></i> Outro
+                    </label>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="data" class="form-label">Data</label>
+                <input type="date" class="form-control form-control-lg" id="data" name="data" value="{{ hoje }}"
+                    required>
+            </div>
+
+            <div class="mb-3">
+                <label for="valor" class="form-label">Valor (R$)</label>
+                <input type="number" step="0.01" min="0.01" class="form-control form-control-lg" id="valor" name="valor"
+                    placeholder="0,00" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="estabelecimento" class="form-label">Origem/Cliente (opcional)</label>
+                <input type="text" class="form-control" id="estabelecimento" name="estabelecimento"
+                    placeholder="Ex: Cliente João, Banco Inter, iFood">
+            </div>
+
+            <div class="mb-3">
+                <label for="descricao" class="form-label">Descrição (opcional)</label>
+                <input type="text" class="form-control" id="descricao" name="descricao"
+                    placeholder="Ex: Vendas do dia, PIX reserva">
+            </div>
+
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-success btn-lg" id="btn-registrar">
+                    <i class="bi bi-check-lg"></i> Registrar Receita
+                </button>
+                <a href="{{ url_for('main.home') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Voltar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal de Sucesso -->
+<div class="modal fade" id="modal-sucesso" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content text-center p-4">
+            <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+            <h5 class="mt-3">Receita Registrada!</h5>
+            <a href="{{ url_for('main.home') }}" class="btn btn-success mt-3">OK</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('form-receita');
+        const btnRegistrar = document.getElementById('btn-registrar');
+        const btnAnexar = document.getElementById('btn-anexar');
+        const btnRemover = document.getElementById('btn-remover');
+        const inputComprovante = document.getElementById('input-comprovante');
+        const previewComprovante = document.getElementById('preview-comprovante');
+        const loadingOcr = document.getElementById('loading-ocr');
+        const nomeComprovante = document.getElementById('nome-comprovante');
+        const comprovanteUrlInput = document.getElementById('comprovante-url');
+        const modalSucesso = new bootstrap.Modal(document.getElementById('modal-sucesso'));
+
+        // Campos do formulário
+        const campoData = document.getElementById('data');
+        const campoValor = document.getElementById('valor');
+        const campoEstabelecimento = document.getElementById('estabelecimento');
+
+        // Botão anexar
+        btnAnexar.addEventListener('click', function () {
+            inputComprovante.click();
+        });
+
+        // Quando seleciona arquivo
+        inputComprovante.addEventListener('change', async function (e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // Validar tamanho (máximo 16MB)
+            if (file.size > 16 * 1024 * 1024) {
+                alert('Arquivo muito grande. Máximo: 16MB');
+                return;
+            }
+
+            try {
+                // Mostrar loading
+                loadingOcr.classList.remove('d-none');
+                btnAnexar.classList.add('d-none');
+
+                // Converter para base64
+                const arquivoBase64 = await fileToBase64(file);
+
+                // Enviar para API com OCR
+                const response = await fetch('/upload-comprovante', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ arquivo: arquivoBase64 })
+                });
+
+                const result = await response.json();
+
+                // Esconder loading
+                loadingOcr.classList.add('d-none');
+
+                if (result.sucesso) {
+                    // Salva URL do comprovante
+                    comprovanteUrlInput.value = result.url;
+
+                    // Mostra preview
+                    nomeComprovante.textContent = file.name;
+                    previewComprovante.classList.remove('d-none');
+                    btnAnexar.innerHTML = '<i class="bi bi-check"></i> Comprovante anexado';
+                    btnAnexar.classList.remove('btn-outline-primary', 'd-none');
+                    btnAnexar.classList.add('btn-success');
+
+                    // Preenche campos automaticamente se OCR retornou dados
+                    if (result.dados) {
+                        preencherFormulario(result.dados);
+                    } else if (result.aviso) {
+                        console.log('OCR aviso:', result.aviso);
+                    }
+                } else {
+                    btnAnexar.classList.remove('d-none');
+                    alert('Erro: ' + result.erro);
+                }
+
+            } catch (error) {
+                loadingOcr.classList.add('d-none');
+                btnAnexar.classList.remove('d-none');
+                console.error('Erro ao ler arquivo:', error);
+                alert('Erro ao processar arquivo.');
+            }
+        });
+
+        // Preencher formulário com dados do OCR
+        function preencherFormulario(dados) {
+            // Data
+            if (dados.data) {
+                campoData.value = dados.data;
+            }
+
+            // Valor
+            if (dados.valor && dados.valor > 0) {
+                campoValor.value = dados.valor.toFixed(2);
+            }
+
+            // Origem/Cliente
+            if (dados.origem) {
+                campoEstabelecimento.value = dados.origem;
+            }
+
+            // Tipo de pagamento (seleciona o radio button correto)
+            if (dados.tipo_pagamento) {
+                const tipoPagamento = dados.tipo_pagamento.toLowerCase();
+
+                if (tipoPagamento === 'pix') {
+                    document.getElementById('tipo-pix').checked = true;
+                } else if (tipoPagamento === 'cartão' || tipoPagamento === 'cartao') {
+                    document.getElementById('tipo-cartao').checked = true;
+                } else if (tipoPagamento === 'transferência' || tipoPagamento === 'transferencia') {
+                    document.getElementById('tipo-transferencia').checked = true;
+                } else if (tipoPagamento === 'vendas') {
+                    document.getElementById('tipo-caixa').checked = true;
+                } else {
+                    document.getElementById('tipo-outro').checked = true;
+                }
+            }
+        }
+
+        // Botão remover
+        btnRemover.addEventListener('click', function () {
+            inputComprovante.value = '';
+            previewComprovante.classList.add('d-none');
+            btnAnexar.innerHTML = '<i class="bi bi-camera"></i> Anexar Comprovante (PIX/Transferência)';
+            btnAnexar.classList.remove('btn-success');
+            btnAnexar.classList.add('btn-outline-primary');
+            comprovanteUrlInput.value = '';
+        });
+
+        // Submit do formulário
+        form.addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            try {
+                btnRegistrar.disabled = true;
+                btnRegistrar.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Salvando...';
+
+                // Monta os dados do formulário
+                const formData = new FormData(form);
+                const dados = Object.fromEntries(formData);
+                dados.valor = parseFloat(dados.valor);
+
+                // Envia transação
+                const response = await fetch('/transacao', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dados)
+                });
+
+                const result = await response.json();
+
+                if (result.sucesso) {
+                    modalSucesso.show();
+                } else {
+                    alert('Erro: ' + result.erro);
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Erro ao salvar. Tente novamente.');
+            } finally {
+                btnRegistrar.disabled = false;
+                btnRegistrar.innerHTML = '<i class="bi bi-check-lg"></i> Registrar Receita';
+            }
+        });
+
+        // Função auxiliar: File → Base64
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = () => reject(new Error('Erro ao ler arquivo'));
+                reader.readAsDataURL(file);
+            });
+        }
+    });
+</script>
+{% endblock %}

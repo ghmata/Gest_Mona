@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}Erro interno{% endblock %}
+
+{% block content %}
+<div class="text-center py-5">
+    <i class="bi bi-x-circle text-danger" style="font-size: 4rem;"></i>
+    <h2 class="mt-3">Erro interno</h2>
+    <p class="text-muted">Algo deu errado. Tente novamente.</p>
+    <a href="{{ url_for('main.home') }}" class="btn btn-primary mt-3">
+        <i class="bi bi-house"></i> Voltar ao início
+    </a>
+</div>
+{% endblock %}

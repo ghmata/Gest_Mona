@@ -1,0 +1,220 @@
+{% extends 'base.html' %}
+
+{% block title %}GestorBot - Início{% endblock %}
+
+{% block content %}
+<div class="home-container">
+    <h1 class="text-center mb-4">O que deseja fazer?</h1>
+
+    <div class="d-grid gap-3">
+        <!-- Botão Nova Despesa -->
+        <button id="btn-nova-despesa" class="btn btn-primary btn-action" aria-label="Registrar despesa">
+            <i class="bi bi-receipt"></i>
+            <span>Nova Despesa</span>
+            <small>Registrar gastos do restaurante</small>
+        </button>
+
+        <!-- Botão Nova Receita -->
+        <button id="btn-nova-receita" class="btn btn-success btn-action" aria-label="Registrar receita">
+            <i class="bi bi-cash-stack"></i>
+            <span>Nova Receita</span>
+            <small>Registrar entradas de dinheiro</small>
+        </button>
+    </div>
+
+    <!-- Input de arquivo oculto (único) -->
+    <input type="file" id="input-camera" accept="image/*,.pdf,application/pdf" class="d-none" aria-hidden="true">
+
+    <!-- Input de arquivos múltiplos (até 10) -->
+    <input type="file" id="input-massa" accept="image/*,.pdf,application/pdf" multiple class="d-none"
+        aria-hidden="true">
+</div>
+
+<!-- Modal de Escolha: Único ou Em Massa -->
+<div class="modal fade" id="modal-escolha-modo" tabindex="-1" aria-labelledby="modal-escolha-label" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header" id="modal-escolha-header">
+                <h5 class="modal-title" id="modal-escolha-label">
+                    <i class="bi bi-receipt"></i> <span id="modal-escolha-titulo">Nova Despesa</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-center text-muted mb-4">Como deseja lançar?</p>
+                <div class="d-grid gap-3">
+                    <button id="btn-modo-unico" class="btn btn-outline-primary btn-lg">
+                        <i class="bi bi-file-earmark"></i> Um arquivo
+                        <small class="d-block text-muted">Upload único</small>
+                    </button>
+                    <button id="btn-modo-massa" class="btn btn-outline-warning btn-lg">
+                        <i class="bi bi-files"></i> Múltiplos arquivos
+                        <small class="d-block text-muted">Até 10 de uma vez</small>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Loading -->
+<div class="modal fade" id="modal-loading" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="modal-loading-label" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-center p-4">
+            <div class="spinner-border text-primary mb-3" role="status">
+                <span class="visually-hidden">Processando...</span>
+            </div>
+            <p class="mb-0" id="modal-loading-label">Analisando nota fiscal...</p>
+            <small class="text-muted">Isso pode levar alguns segundos</small>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Conferência -->
+<div class="modal fade" id="modal-conferencia" tabindex="-1" aria-labelledby="modal-conferencia-label"
+    aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen-sm-down">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modal-conferencia-label">Conferir Dados</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Preview do arquivo -->
+                <div class="text-center mb-3" id="preview-container">
+                    <img id="img-preview" src="" alt="Nota fiscal" class="img-thumbnail"
+                        style="max-height: 150px; display: none;">
+                    <div id="pdf-preview" class="d-none text-center p-3 bg-light rounded">
+                        <i class="bi bi-file-earmark-pdf text-danger" style="font-size: 3rem;"></i>
+                        <p class="mb-0 mt-2 text-muted" id="pdf-nome">documento.pdf</p>
+                    </div>
+                </div>
+
+                <!-- Formulário de conferência -->
+                <form id="form-conferencia">
+                    <input type="hidden" id="comprovante-url" name="comprovante_url">
+                    <input type="hidden" name="tipo" value="DESPESA">
+
+                    <div class="mb-3">
+                        <label for="data" class="form-label">Data</label>
+                        <input type="date" class="form-control form-control-lg" id="data" name="data" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="estabelecimento" class="form-label">Estabelecimento</label>
+                        <input type="text" class="form-control form-control-lg" id="estabelecimento"
+                            name="estabelecimento" placeholder="Nome do fornecedor">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="valor" class="form-label">Valor Total (R$)</label>
+                        <input type="number" step="0.01" min="0.01" class="form-control form-control-lg" id="valor"
+                            name="valor" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="categoria" class="form-label">Categoria</label>
+                        <select class="form-select form-select-lg" id="categoria" name="categoria" required>
+                            <option value="Insumos">🥬 Insumos</option>
+                            <option value="Bebidas">🥤 Bebidas</option>
+                            <option value="Operacional">🔧 Operacional</option>
+                            <option value="Pessoal">👥 Pessoal</option>
+                            <option value="Infraestrutura">🏠 Infraestrutura</option>
+                            <option value="Administrativo">🏛️ Administrativo</option>
+                            <option value="Marketing e Eventos">🎉 Marketing e Eventos</option>
+                            <option value="Outros">📋 Outros</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="subcategoria" class="form-label">Subcategoria</label>
+                        <select class="form-select form-select-lg" id="subcategoria" name="subcategoria" required>
+                            <!-- Opções atualizadas dinamicamente via JavaScript -->
+                            <option value="Frutos do Mar">🦐 Frutos do Mar</option>
+                            <option value="Carnes e Aves">🥩 Carnes e Aves</option>
+                            <option value="Hortifruti">🥬 Hortifruti</option>
+                            <option value="Laticínios">🧀 Laticínios</option>
+                            <option value="Frutas">🍎 Frutas</option>
+                            <option value="Alimento (Variado)">🥘 Alimento (Variado)</option>
+                            <option value="Gelo">🧊 Gelo</option>
+                            <option value="Outros">📋 Outros</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="descricao" class="form-label">Descrição (opcional)</label>
+                        <input type="text" class="form-control" id="descricao" name="descricao"
+                            placeholder="Ex: Compras semanais">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" id="btn-confirmar" class="btn btn-primary btn-lg">
+                    <i class="bi bi-check-lg"></i> Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Sucesso -->
+<div class="modal fade" id="modal-sucesso" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content text-center p-4">
+            <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+            <h5 class="mt-3">Despesa Registrada!</h5>
+            <button type="button" class="btn btn-success mt-3" data-bs-dismiss="modal">OK</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Conferência em Massa -->
+<div class="modal fade" id="modal-massa" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="modal-massa-label" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title" id="modal-massa-label">
+                    <i class="bi bi-files"></i> Conferência em Massa
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <div id="massa-loading" class="text-center py-4">
+                    <div class="spinner-border text-warning mb-3" role="status"></div>
+                    <p id="massa-loading-text">Processando arquivos... <span id="massa-progresso">0/0</span></p>
+                </div>
+
+                <div id="massa-lista" class="d-none">
+                    <div class="alert alert-info mb-3">
+                        <i class="bi bi-info-circle"></i>
+                        Confira os dados extraídos. Você pode editar antes de confirmar.
+                    </div>
+
+                    <div id="massa-itens"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" id="btn-confirmar-massa" class="btn btn-success btn-lg d-none">
+                    <i class="bi bi-check-all"></i> Confirmar Todos (<span id="massa-total">0</span>)
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Sucesso em Massa -->
+<div class="modal fade" id="modal-sucesso-massa" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-center p-4">
+            <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+            <h5 class="mt-3">Despesas Registradas!</h5>
+            <p class="text-muted" id="massa-resultado-texto"></p>
+            <button type="button" class="btn btn-success mt-3" data-bs-dismiss="modal">OK</button>
+        </div>
+    </div>
+</div>
+{% endblock %}

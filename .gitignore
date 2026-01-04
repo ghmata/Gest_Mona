@@ -1,0 +1,17 @@
+# Ambiente
+.env
+venv/
+__pycache__/
+*.pyc
+
+# Banco de dados
+instance/
+*.db
+
+# Uploads de usuários
+static/uploads/*
+!static/uploads/.gitkeep
+
+# IDE
+.vscode/
+.idea/

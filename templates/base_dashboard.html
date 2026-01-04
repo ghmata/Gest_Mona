@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{# Template base para páginas com sidebar de navegação #}
+
+{% block head %}
+<!-- Sidebar CSS -->
+<link href="{{ url_for('static', filename='css/sidebar.css') }}" rel="stylesheet">
+{{ super() }}
+{% endblock %}
+
+{% block content %}
+<script>
+    // Aplica estado collapsed ANTES da sidebar renderizar (previne flash)
+    (function () {
+        if (localStorage.getItem('mona-sidebar-collapsed') === 'true' && window.innerWidth >= 992) {
+            document.documentElement.classList.add('sidebar-collapsed-initial');
+        }
+    })();
+</script>
+<div class="layout-with-sidebar">
+    <!-- Sidebar de Navegação -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <span class="sidebar-logo">📊</span>
+            <div>
+                <span class="sidebar-brand">Dashboard</span>
+                <span class="sidebar-year d-block">{{ ano_atual }}</span>
+            </div>
+            <button type="button" class="btn-collapse-sidebar d-none d-lg-block" id="btn-collapse-sidebar"
+                aria-label="Colapsar menu">
+                <i class="bi bi-list"></i>
+            </button>
+        </div>
+
+        <nav class="sidebar-nav">
+            <ul class="nav flex-column">
+                {% set meses = [
+                (1, 'Janeiro', 'bi-calendar'),
+                (2, 'Fevereiro', 'bi-calendar'),
+                (3, 'Março', 'bi-calendar'),
+                (4, 'Abril', 'bi-calendar'),
+                (5, 'Maio', 'bi-calendar'),
+                (6, 'Junho', 'bi-calendar'),
+                (7, 'Julho', 'bi-calendar'),
+                (8, 'Agosto', 'bi-calendar'),
+                (9, 'Setembro', 'bi-calendar'),
+                (10, 'Outubro', 'bi-calendar'),
+                (11, 'Novembro', 'bi-calendar'),
+                (12, 'Dezembro', 'bi-calendar')
+                ] %}
+
+                {% for num, nome, icone in meses %}
+                <li class="nav-item">
+                    <a href="{{ url_for('main.dashboard', mes=num, ano=ano_atual) }}"
+                        class="nav-link {% if mes_atual == num %}active{% endif %}" data-mes="{{ num }}"
+                        data-ano="{{ ano_atual }}">
+                        <i class="nav-icon bi {{ icone }}"></i>
+                        <span class="nav-text">{{ nome }}</span>
+                    </a>
+                </li>
+                {% endfor %}
+
+                <li class="nav-divider" aria-hidden="true"></li>
+
+                <li class="nav-item">
+                    <a href="{{ url_for('main.dashboard', mes=0, ano=ano_atual) }}"
+                        class="nav-link {% if mes_atual == 0 %}active{% endif %}" data-mes="0"
+                        data-ano="{{ ano_atual }}">
+                        <i class="nav-icon bi bi-graph-up-arrow"></i>
+                        <span class="nav-text">Análise Anual</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <div class="sidebar-footer">
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="{{ url_for('main.home') }}" class="nav-link">
+                        <i class="nav-icon bi bi-plus-circle"></i>
+                        <span class="nav-text">Nova Transação</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </aside>
+
+    <!-- Overlay para mobile -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <!-- Conteúdo principal -->
+    <div class="main-content-with-sidebar">
+        <div class="container-fluid py-4 px-lg-4">
+            {% block dashboard_content %}{% endblock %}
+        </div>
+    </div>
+</div>
+
+<!-- Botão toggle mobile -->
+<button type="button" class="btn-sidebar-toggle" id="btn-sidebar-toggle" aria-label="Abrir menu">
+    <i class="bi bi-calendar3"></i>
+</button>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="{{ url_for('static', filename='js/navigation.js') }}"></script>
+{% endblock %}
