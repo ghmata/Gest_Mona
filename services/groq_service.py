@@ -139,7 +139,7 @@ class GroqService:
     
     def __init__(self):
         """
-        Inicializa cliente Groq com API key do config.
+        Inicializa cliente Groq com API key do ambiente ou config.
         
         Raises:
             Não levanta exceções, mas loga aviso se API key não estiver configurada.
@@ -147,15 +147,19 @@ class GroqService:
         self.model = Config.GROQ_MODEL
         self.client = None
         
-        if Config.GROQ_API_KEY:
+        # Tenta pegar a API key diretamente do ambiente (prioridade)
+        # Isso permite que o WSGI defina a variável antes do config carregar
+        api_key = os.environ.get('GROQ_API_KEY') or Config.GROQ_API_KEY
+        
+        if api_key:
             try:
                 # DEBUG FORÇADO PARA LOGS DO SERVIDOR
-                masked_key = f"{Config.GROQ_API_KEY[:4]}...{Config.GROQ_API_KEY[-4:]}" if len(Config.GROQ_API_KEY) > 8 else "CURTA"
+                masked_key = f"{api_key[:4]}...{api_key[-4:]}" if len(api_key) > 8 else "CURTA"
                 print(f"--- DEBUG GROQ ---")
                 print(f"Tentando inicializar com chave: {masked_key}")
-                print(f"Tamanho da chave: {len(Config.GROQ_API_KEY)}")
+                print(f"Tamanho da chave: {len(api_key)}")
                 
-                self.client = Groq(api_key=Config.GROQ_API_KEY)
+                self.client = Groq(api_key=api_key)
                 logger.info(f"Cliente Groq inicializado com modelo {self.model}")
                 print(f"--- SUCESSO GROQ ---")
             except Exception as e:
@@ -186,7 +190,16 @@ class GroqService:
             ...     img_b64 = base64.b64encode(f.read()).decode()
             >>> resultado = service.processar_nota(img_b64, "Comprovante_Energia.pdf")
         """
-        # Verifica se o cliente está configurado
+        # Verifica se o cliente está configurado (ou tenta configurar agora)
+        if not self.client:
+            # Tenta reinicializar (pela força do ódio) caso a ENV tenha carregado depois
+            if Config.GROQ_API_KEY:
+                try:
+                    self.client = Groq(api_key=Config.GROQ_API_KEY)
+                    logger.info("Cliente Groq reinicializado com sucesso no momento da chamada")
+                except Exception as e:
+                    logger.error(f"Erro na reinicialização tardia: {e}")
+
         if not self.client:
             logger.error("Tentativa de processar nota sem cliente Groq configurado")
             return {
