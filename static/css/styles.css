@@ -98,6 +98,17 @@ body {
 }
 
 /* ======================
+   NAVBAR & SIDEBAR FIXES
+   ====================== */
+/* Ajuste responsivo para a marca na navbar quando a sidebar está expandida (apenas desktop) */
+@media (min-width: 992px) {
+    .navbar-mona .navbar-brand {
+        margin-left: 230px;
+        /* Largura da sidebar */
+    }
+}
+
+/* ======================
    LAYOUT - HOME
    ====================== */
 .home-container {
