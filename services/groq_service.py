@@ -43,32 +43,31 @@ INSTRUÇÕES:
 1. Identifique a data do pagamento/compra (formato: YYYY-MM-DD)
 2. Identifique o nome do estabelecimento/fornecedor/beneficiário
 3. Extraia o valor TOTAL pago (apenas números, sem R$)
-4. Classifique a despesa em UMA categoria (PRIORIZE o nome do arquivo se informado):
-   - Frutos do Mar: camarão, peixe, salmão, polvo, ostras, lula
-   - Carnes e Aves: carne bovina, frango, hambúrguer
-   - Hortifruti: legumes, verduras, frutas, saladas
-   - Bebidas: água, refrigerantes, sucos, energéticos, café
-   - Cervejas: cervejas em geral
-   - Destilados: gin, vodka, whisky, rum, tequila
-   - Vinhos: champagnes, espumantes, vinhos
-   - Laticínios: queijos, manteiga, creme de leite
-   - Embalagens: descartáveis, guardanapos, sacolas
-   - Limpeza: produtos de limpeza, higiene
-   - Manutenção: reparos, equipamentos, peças
-   - Gás: gás de cozinha
-   - Pessoal: salários, folha de pagamento, benefícios, FGTS, INSS, freelancer, "pag free"
-   - Aluguel: aluguel de imóvel, aluguel de equipamentos
-   - Energia: conta de luz, conta de água, conta de gás encanado
-   - Seguros: seguros em geral
-   - Organização: eventos, serviços administrativos, fornecedores
-   - Outros: qualquer item não listado
+4. Classifique a despesa em CATEGORIA e SUBCATEGORIA conforme abaixo:
+
+CATEGORIAS E SUBCATEGORIAS DISPONÍVEIS:
+- Insumos: Frutos do Mar, Carnes e Aves, Hortifruti, Laticínios, Frutas, Alimento (Variado), Gelo, Outros
+- Bebidas: Bebidas, Cervejas, Destilados, Vinhos, Energético, Outros
+- Operacional: Embalagens, Limpeza, Manutenção, Gás, Organização, Outros
+- Pessoal: Pessoal, Pro Labore, Salário, Freelancer, Gorjeta, Venda de Férias, Venda de Folga, Vale Transporte, Vale Refeição, DJ/Músicos, Hora Extra, Outros
+- Infraestrutura: Aluguel, Energia, Seguros, Outros
+- Administrativo: Impostos, Transporte, Outros
+- Marketing e Eventos: Eventos, Marketing, Aluguel, Outros
+- Outros: Outros
+
+DICAS PARA CLASSIFICAR:
+- Se for pagamento a pessoa física (freelancer, DJ, músico, banda): Pessoal → subcategoria apropriada
+- Se for conta de luz/água/energia: Infraestrutura → Energia
+- Se for compra de alimentos: Insumos → subcategoria específica
+- Se não conseguir identificar claramente: Outros → Outros
 
 RESPONDA APENAS COM JSON VÁLIDO:
 {{
     "data": "YYYY-MM-DD",
     "estabelecimento": "Nome do Fornecedor ou Beneficiário",
     "valor_total": 123.45,
-    "categoria": "Categoria"
+    "categoria": "Categoria",
+    "subcategoria": "Subcategoria"
 }}
 
 Se a imagem não for legível ou não for um documento de despesa, retorne:
@@ -253,16 +252,31 @@ class GroqService:
             resultado = self._processar_resposta(texto_resposta)
             
             # ===========================================
-            # FALLBACK: Se categoria for genérica, tenta usar nome do arquivo
+            # LÓGICA DE CATEGORIZAÇÃO:
+            # 1. Primeiro: Verifica nome do arquivo
+            # 2. Segundo: Usa o que a IA identificou do comprovante
+            # 3. Fallback: Categoria/Subcategoria = Outros/Outros
             # ===========================================
             if resultado['sucesso'] and nome_arquivo:
-                categoria_ia = resultado['dados'].get('categoria', '')
-                # Se a IA retornou categoria genérica, tenta usar nome do arquivo
-                if categoria_ia in ['Outros', 'Pessoal']:
-                    categoria_arquivo = self._categorizar_por_nome_arquivo(nome_arquivo)
-                    if categoria_arquivo:
-                        logger.info(f"Substituindo categoria '{categoria_ia}' por '{categoria_arquivo}' (baseado no nome do arquivo)")
-                        resultado['dados']['categoria'] = categoria_arquivo
+                # Tenta categorizar pelo nome do arquivo primeiro
+                cat_sub_arquivo = self._categorizar_por_nome_arquivo(nome_arquivo)
+                
+                if cat_sub_arquivo:
+                    # Nome do arquivo tem informação útil - usa ela
+                    categoria_arquivo, subcategoria_arquivo = cat_sub_arquivo
+                    logger.info(f"Categoria detectada pelo nome do arquivo: {categoria_arquivo}/{subcategoria_arquivo}")
+                    resultado['dados']['categoria'] = categoria_arquivo
+                    resultado['dados']['subcategoria'] = subcategoria_arquivo
+                else:
+                    # Nome do arquivo não ajudou - verifica se IA conseguiu identificar
+                    categoria_ia = resultado['dados'].get('categoria', 'Outros')
+                    subcategoria_ia = resultado['dados'].get('subcategoria', 'Outros')
+                    
+                    # Se IA não conseguiu identificar (retornou Outros/Outros), mantém assim
+                    if categoria_ia == 'Outros' and subcategoria_ia == 'Outros':
+                        logger.info("Nenhuma categoria identificada - usando Outros/Outros")
+                    else:
+                        logger.info(f"Categoria detectada pela IA (comprovante): {categoria_ia}/{subcategoria_ia}")
             
             return resultado
             
@@ -513,17 +527,26 @@ Por exemplo: se o nome contém "energia", classifique como "Energia"; se contém
                 'erro': 'Dados incompletos extraídos da nota. Tente com uma foto mais nítida.'
             }
         
+        # Normaliza categoria e subcategoria
+        categoria_normalizada = self._normalizar_categoria(dados.get('categoria', 'Outros'))
+        subcategoria_raw = dados.get('subcategoria', 'Outros')
+        
+        # Se subcategoria não foi identificada, usa 'Outros'
+        if not subcategoria_raw or subcategoria_raw.strip() == '':
+            subcategoria_raw = 'Outros'
+        
         # Normaliza os dados
         dados_normalizados = {
             'data': dados.get('data'),
             'estabelecimento': dados.get('estabelecimento', 'Não identificado'),
             'valor_total': formatar_valor(dados.get('valor_total')),
-            'categoria': self._normalizar_categoria(dados.get('categoria', 'Outros'))
+            'categoria': categoria_normalizada,
+            'subcategoria': subcategoria_raw
         }
         
         logger.info(
             f"Nota processada com sucesso: {dados_normalizados['estabelecimento']} - "
-            f"R${dados_normalizados['valor_total']:.2f}"
+            f"R${dados_normalizados['valor_total']:.2f} ({categoria_normalizada}/{subcategoria_raw})"
         )
         
         return {
@@ -622,100 +645,124 @@ Por exemplo: se o nome contém "energia", classifique como "Energia"; se contém
         
         return True
     
-    def _categorizar_por_nome_arquivo(self, nome_arquivo: str) -> str:
+    def _categorizar_por_nome_arquivo(self, nome_arquivo: str) -> tuple:
         """
-        Tenta determinar a categoria baseado no nome do arquivo.
-        Usado como fallback quando a IA não consegue identificar.
+        Tenta determinar a categoria e subcategoria baseado no nome do arquivo.
+        Usado como primeira tentativa de categorização.
         
         Args:
             nome_arquivo: Nome original do arquivo
             
         Returns:
-            str: Categoria identificada ou None se não conseguir
+            tuple: (categoria, subcategoria) ou None se não conseguir identificar
         """
         if not nome_arquivo:
             return None
         
         nome_lower = nome_arquivo.lower()
         
-        # Mapeamento de palavras-chave para categorias
-        mapeamento = {
-            # Custos fixos/operacionais
-            'energia': 'Energia',
-            'luz': 'Energia',
-            'celesc': 'Energia',
-            'eletric': 'Energia',
-            'agua': 'Energia',
-            'casan': 'Energia',
-            'aluguel': 'Aluguel',
-            'locacao': 'Aluguel',
-            'seguro': 'Seguros',
-            'pessoal': 'Pessoal',
-            'salario': 'Pessoal',
-            'folha': 'Pessoal',
-            'funcionario': 'Pessoal',
-            'fgts': 'Pessoal',
-            'inss': 'Pessoal',
-            'free': 'Pessoal',
-            'freelancer': 'Pessoal',
-            'pag free': 'Pessoal',
-            'gas': 'Gás',
-            'botijao': 'Gás',
-            'organizacao': 'Organização',
-            'evento': 'Eventos',
-            'show': 'Eventos',
-            'musica': 'Eventos',
-            'facebook': 'Marketing',
-            'instagram': 'Marketing',
-            'anuncio': 'Marketing',
-            'impulsionamento': 'Marketing',
-            'grafica': 'Marketing',
-            'das': 'Impostos',
-            'simples': 'Impostos',
-            'alvara': 'Impostos',
-            'taxa': 'Impostos',
-            'tarifa': 'Impostos',
-            'uber': 'Transporte',
-            '99': 'Transporte',
-            'taxi': 'Transporte',
-            'combustivel': 'Transporte',
-            'gasolina': 'Transporte',
-            'frete': 'Transporte',
-            'entrega': 'Transporte',
+        # Mapeamento de palavras-chave para (categoria, subcategoria)
+        mapeamento = [
+            # Pessoal - específicos primeiro (ordem importa!)
+            ('dj', 'Pessoal', 'DJ/Músicos'),
+            ('musico', 'Pessoal', 'DJ/Músicos'),
+            ('banda', 'Pessoal', 'DJ/Músicos'),
+            ('som ao vivo', 'Pessoal', 'DJ/Músicos'),
+            ('hora extra', 'Pessoal', 'Hora Extra'),
+            ('he ', 'Pessoal', 'Hora Extra'),
+            ('pro labore', 'Pessoal', 'Pro Labore'),
+            ('prolabore', 'Pessoal', 'Pro Labore'),
+            ('salario', 'Pessoal', 'Salário'),
+            ('folha', 'Pessoal', 'Salário'),
+            ('freelancer', 'Pessoal', 'Freelancer'),
+            ('pag free', 'Pessoal', 'Freelancer'),
+            ('gorjeta', 'Pessoal', 'Gorjeta'),
+            ('vt ', 'Pessoal', 'Vale Transporte'),
+            ('vale transporte', 'Pessoal', 'Vale Transporte'),
+            ('vr ', 'Pessoal', 'Vale Refeição'),
+            ('vale refeicao', 'Pessoal', 'Vale Refeição'),
+            ('fgts', 'Pessoal', 'Pessoal'),
+            ('inss', 'Pessoal', 'Pessoal'),
+            ('funcionario', 'Pessoal', 'Pessoal'),
+            
+            # Infraestrutura
+            ('energia', 'Infraestrutura', 'Energia'),
+            ('luz', 'Infraestrutura', 'Energia'),
+            ('celesc', 'Infraestrutura', 'Energia'),
+            ('eletric', 'Infraestrutura', 'Energia'),
+            ('agua', 'Infraestrutura', 'Energia'),
+            ('casan', 'Infraestrutura', 'Energia'),
+            ('aluguel', 'Infraestrutura', 'Aluguel'),
+            ('locacao', 'Infraestrutura', 'Aluguel'),
+            ('seguro', 'Infraestrutura', 'Seguros'),
+            
+            # Operacional
+            ('gas', 'Operacional', 'Gás'),
+            ('botijao', 'Operacional', 'Gás'),
+            ('limpeza', 'Operacional', 'Limpeza'),
+            ('embalagem', 'Operacional', 'Embalagens'),
+            ('descartavel', 'Operacional', 'Embalagens'),
+            ('manutencao', 'Operacional', 'Manutenção'),
+            ('conserto', 'Operacional', 'Manutenção'),
+            ('reparo', 'Operacional', 'Manutenção'),
+            ('organizacao', 'Operacional', 'Organização'),
+            
+            # Marketing e Eventos
+            ('evento', 'Marketing e Eventos', 'Eventos'),
+            ('show', 'Marketing e Eventos', 'Eventos'),
+            ('festa', 'Marketing e Eventos', 'Eventos'),
+            ('facebook', 'Marketing e Eventos', 'Marketing'),
+            ('instagram', 'Marketing e Eventos', 'Marketing'),
+            ('anuncio', 'Marketing e Eventos', 'Marketing'),
+            ('impulsionamento', 'Marketing e Eventos', 'Marketing'),
+            ('grafica', 'Marketing e Eventos', 'Marketing'),
+            
+            # Administrativo
+            ('das', 'Administrativo', 'Impostos'),
+            ('simples', 'Administrativo', 'Impostos'),
+            ('alvara', 'Administrativo', 'Impostos'),
+            ('taxa', 'Administrativo', 'Impostos'),
+            ('tarifa', 'Administrativo', 'Impostos'),
+            ('imposto', 'Administrativo', 'Impostos'),
+            ('uber', 'Administrativo', 'Transporte'),
+            ('99', 'Administrativo', 'Transporte'),
+            ('taxi', 'Administrativo', 'Transporte'),
+            ('combustivel', 'Administrativo', 'Transporte'),
+            ('gasolina', 'Administrativo', 'Transporte'),
+            ('frete', 'Administrativo', 'Transporte'),
             
             # Insumos
-            'camarao': 'Frutos do Mar',
-            'peixe': 'Frutos do Mar',
-            'frutos': 'Frutos do Mar',
-            'carne': 'Carnes e Aves',
-            'frango': 'Carnes e Aves',
-            'hortifruti': 'Hortifruti',
-            'verdura': 'Hortifruti',
-            'legume': 'Hortifruti',
-            'fruta': 'Hortifruti',
-            'bebida': 'Bebidas',
-            'cerveja': 'Cervejas',
-            'destilado': 'Destilados',
-            'gin': 'Destilados',
-            'vodka': 'Destilados',
-            'whisky': 'Destilados',
-            'vinho': 'Vinhos',
-            'espumante': 'Vinhos',
-            'champagne': 'Vinhos',
-            'queijo': 'Laticínios',
-            'laticinio': 'Laticínios',
-            'embalagem': 'Embalagens',
-            'descartavel': 'Embalagens',
-            'limpeza': 'Limpeza',
-            'manutencao': 'Manutenção',
-            'conserto': 'Manutenção',
-            'reparo': 'Manutenção',
-        }
+            ('camarao', 'Insumos', 'Frutos do Mar'),
+            ('peixe', 'Insumos', 'Frutos do Mar'),
+            ('frutos do mar', 'Insumos', 'Frutos do Mar'),
+            ('carne', 'Insumos', 'Carnes e Aves'),
+            ('frango', 'Insumos', 'Carnes e Aves'),
+            ('hortifruti', 'Insumos', 'Hortifruti'),
+            ('verdura', 'Insumos', 'Hortifruti'),
+            ('legume', 'Insumos', 'Hortifruti'),
+            ('fruta', 'Insumos', 'Frutas'),
+            ('queijo', 'Insumos', 'Laticínios'),
+            ('laticinio', 'Insumos', 'Laticínios'),
+            ('gelo', 'Insumos', 'Gelo'),
+            
+            # Bebidas
+            ('cerveja', 'Bebidas', 'Cervejas'),
+            ('destilado', 'Bebidas', 'Destilados'),
+            ('gin', 'Bebidas', 'Destilados'),
+            ('vodka', 'Bebidas', 'Destilados'),
+            ('whisky', 'Bebidas', 'Destilados'),
+            ('vinho', 'Bebidas', 'Vinhos'),
+            ('espumante', 'Bebidas', 'Vinhos'),
+            ('champagne', 'Bebidas', 'Vinhos'),
+            ('energetico', 'Bebidas', 'Energético'),
+            ('red bull', 'Bebidas', 'Energético'),
+            ('bebida', 'Bebidas', 'Bebidas'),
+        ]
         
-        for chave, categoria in mapeamento.items():
+        for chave, categoria, subcategoria in mapeamento:
             if chave in nome_lower:
-                logger.info(f"Categoria identificada pelo nome do arquivo: {categoria}")
-                return categoria
+                logger.info(f"Categoria identificada pelo nome do arquivo: {categoria}/{subcategoria}")
+                return (categoria, subcategoria)
         
         return None
     

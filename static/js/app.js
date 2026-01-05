@@ -77,6 +77,8 @@ document.addEventListener('DOMContentLoaded', function () {
             { value: 'Venda de Folga', label: '📅 Venda de Folga' },
             { value: 'Vale Transporte', label: '🚌 Vale Transporte' },
             { value: 'Vale Refeição', label: '🍽️ Vale Refeição' },
+            { value: 'DJ/Músicos', label: '🎵 DJ/Músicos' },
+            { value: 'Hora Extra', label: '⏰ Hora Extra' },
             { value: 'Outros', label: '📋 Outros' }
         ],
         'Infraestrutura': [
@@ -142,6 +144,8 @@ document.addEventListener('DOMContentLoaded', function () {
         { regex: /venda\s*de\s*folga|folga\s*vendida/i, categoria: 'Pessoal', subcategoria: 'Venda de Folga' },
         { regex: /\bVT\b|vale\s*transporte/i, categoria: 'Pessoal', subcategoria: 'Vale Transporte' },
         { regex: /\bVR\b|vale\s*refei[cç][aã]o/i, categoria: 'Pessoal', subcategoria: 'Vale Refeição' },
+        { regex: /\bdj\b|m[uú]sico|banda|som\s*(ao)?\s*vivo/i, categoria: 'Pessoal', subcategoria: 'DJ/Músicos' },
+        { regex: /hora\s*extra|he\b|horas?\s*extras?/i, categoria: 'Pessoal', subcategoria: 'Hora Extra' },
 
         // Infraestrutura
         { regex: /aluguel|rent|loca[cç][aã]o/i, categoria: 'Infraestrutura', subcategoria: 'Aluguel' },
@@ -502,6 +506,8 @@ document.addEventListener('DOMContentLoaded', function () {
             { value: 'Manutenção', label: '🔧 Manutenção' },
             { value: 'Gás', label: '🔥 Gás' },
             { value: 'Pessoal', label: '👥 Pessoal' },
+            { value: 'DJ/Músicos', label: '🎵 DJ/Músicos' },
+            { value: 'Hora Extra', label: '⏰ Hora Extra' },
             { value: 'Aluguel', label: '🏠 Aluguel' },
             { value: 'Energia', label: '💡 Energia' },
             { value: 'Seguros', label: '🛡️ Seguros' },

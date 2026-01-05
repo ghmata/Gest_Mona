@@ -114,6 +114,8 @@ class Config:
             'Venda de Folga',     # Venda de folga de funcionários
             'Vale Transporte',    # VT - Vale transporte
             'Vale Refeição',      # VR - Vale refeição
+            'DJ/Músicos',   # Contratação de DJ/Banda/Músicos
+            'Hora Extra',   # Pagamento de horas extras
             'Outros'
         ],
         'Infraestrutura': [

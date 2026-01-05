@@ -69,6 +69,8 @@ const CORES_SUBCATEGORIAS = {
     'Venda de Folga': '#E67E22',     // Laranja cenoura
     'Vale Transporte': '#3498DB',    // Azul céu
     'Vale Refeição': '#E91E63',      // Rosa magenta
+    'DJ/Músicos': '#8E44AD',         // Roxo escuro
+    'Hora Extra': '#C0392B',         // Vermelho tijolo
 
     // Infraestrutura - tons terrosos
     'Aluguel': '#D35400',            // Laranja queimado
