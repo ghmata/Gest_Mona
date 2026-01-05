@@ -19,6 +19,7 @@ from config import Config
 from services.groq_service import get_groq_service
 from utils.file_handler import salvar_arquivo
 from utils.pdf_converter import converter_pdf_para_imagem, eh_pdf
+from utils.auth_decorators import auth_if_enabled
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +27,7 @@ bp = Blueprint('upload', __name__)
 
 
 @bp.route('/upload-nota', methods=['POST'])
+@auth_if_enabled
 def upload_nota():
     """
     Recebe imagem ou PDF de nota fiscal e processa com IA.
@@ -124,6 +126,7 @@ def upload_nota():
 
 
 @bp.route('/upload-notas-massa', methods=['POST'])
+@auth_if_enabled
 def upload_notas_massa():
     """
     Processa múltiplos arquivos de notas fiscais (máximo 10).
@@ -253,6 +256,7 @@ def upload_notas_massa():
 
 
 @bp.route('/upload-comprovante', methods=['POST'])
+@auth_if_enabled
 def upload_comprovante():
     """
     Salva um comprovante de receita e processa OCR.

@@ -17,6 +17,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from config import Config
 from models import get_transacoes_mes, get_totais_mes, get_gastos_por_categoria, get_receitas_por_categoria
 from services.pdf_service import gerar_relatorio_mensal
+from utils.auth_decorators import auth_if_enabled
 
 logger = logging.getLogger(__name__)
 
@@ -30,12 +31,14 @@ MESES_NOMES = [
 
 
 @bp.route('/')
+@auth_if_enabled
 def home():
     """Renderiza a tela inicial com botões de ação."""
     return render_template('home.html')
 
 
 @bp.route('/dashboard')
+@auth_if_enabled
 def dashboard():
     """Renderiza painel administrativo com métricas do mês."""
     try:
@@ -204,6 +207,7 @@ def dashboard():
 
 
 @bp.route('/receita')
+@auth_if_enabled
 def form_receita():
     """Renderiza formulário para lançar receita."""
     hoje = date.today().strftime('%Y-%m-%d')
@@ -211,6 +215,7 @@ def form_receita():
 
 
 @bp.route('/relatorio')
+@auth_if_enabled
 def gerar_relatorio():
     """Gera relatório mensal em PDF para download."""
     hoje = date.today()
@@ -268,6 +273,7 @@ def gerar_relatorio():
 
 
 @bp.route('/exportar-csv')
+@auth_if_enabled
 def exportar_csv():
     """Exporta transações do mês em CSV para download."""
     from services.csv_service import gerar_csv_transacoes

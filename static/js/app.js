@@ -98,6 +98,20 @@ document.addEventListener('DOMContentLoaded', function () {
             { value: 'Aluguel', label: '🏠 Aluguel' },
             { value: 'Outros', label: '📋 Outros' }
         ],
+        'Veículos': [
+            { value: 'Gasolina', label: '⛽ Gasolina' },
+            { value: 'Manutenção', label: '🔧 Manutenção' },
+            { value: 'IPVA', label: '📝 IPVA' },
+            { value: 'Seguro', label: '🛡️ Seguro' },
+            { value: 'Outros', label: '📋 Outros' }
+        ],
+        'Aquisições': [
+            { value: 'Móveis', label: '🪑 Móveis' },
+            { value: 'Eletrodomésticos', label: '🎙️ Eletrodomésticos' },
+            { value: 'Software', label: '💻 Software' },
+            { value: 'Máquinas', label: '🪜 Máquinas' },
+            { value: 'Outros', label: '📋 Outros' }
+        ],
         'Outros': [
             { value: 'Outros', label: '📋 Outros' }
         ]
@@ -158,7 +172,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Marketing e Eventos
         { regex: /evento|festa|show|confraterniza/i, categoria: 'Marketing e Eventos', subcategoria: 'Eventos' },
-        { regex: /marketing|propaganda|anuncio|publicidade|instagram|facebook/i, categoria: 'Marketing e Eventos', subcategoria: 'Marketing' }
+        { regex: /marketing|propaganda|anuncio|publicidade|instagram|facebook/i, categoria: 'Marketing e Eventos', subcategoria: 'Marketing' },
+
+        // Veículos
+        { regex: /gasolina|combustivel|abastecimento|posto|br\\s*mania|shell|ipiranga/i, categoria: 'Veículos', subcategoria: 'Gasolina' },
+        { regex: /ipva|licenciamento|detran/i, categoria: 'Veículos', subcategoria: 'IPVA' },
+        { regex: /seguro\\s*auto|seguro\\s*carro|seguro\\s*veiculo/i, categoria: 'Veículos', subcategoria: 'Seguro' },
+        { regex: /oficina|mec[aâ]nico|troca\\s*de\\s*[oó]leo|borracharia|pneu/i, categoria: 'Veículos', subcategoria: 'Manutenção' },
+
+        // Aquisições
+        { regex: /m[oó]vel|m[oó]veis|mesa|cadeira|sof[aá]|estante|arm[aá]rio/i, categoria: 'Aquisições', subcategoria: 'Móveis' },
+        { regex: /eletrodom[eé]stico|geladeira|fog[aã]o|microondas|freezer|lava(n)?dora/i, categoria: 'Aquisições', subcategoria: 'Eletrodomésticos' },
+        { regex: /software|licen[cç]a|sistema|aplicativo|assinatura/i, categoria: 'Aquisições', subcategoria: 'Software' },
+        { regex: /m[aá]quina|equipamento|ferramenta|industrial/i, categoria: 'Aquisições', subcategoria: 'Máquinas' }
     ];
 
     /**
@@ -518,6 +544,13 @@ document.addEventListener('DOMContentLoaded', function () {
             { value: 'Marketing', label: '📢 Marketing' },
             { value: 'Impostos', label: '🏛️ Impostos' },
             { value: 'Transporte', label: '🚚 Transporte' },
+            { value: 'Gasolina', label: '⛽ Gasolina' },
+            { value: 'IPVA', label: '📝 IPVA' },
+            { value: 'Seguro', label: '🛡️ Seguro' },
+            { value: 'Móveis', label: '🪑 Móveis' },
+            { value: 'Eletrodomésticos', label: '🎙️ Eletrodomésticos' },
+            { value: 'Software', label: '💻 Software' },
+            { value: 'Máquinas', label: '🪜 Máquinas' },
             { value: 'Outros', label: '📋 Outros' }
         ];
 
@@ -686,6 +719,8 @@ document.addEventListener('DOMContentLoaded', function () {
                                         <option value="Infraestrutura" ${categoriaAtual === 'Infraestrutura' ? 'selected' : ''}>🏠 Infraestrutura</option>
                                         <option value="Administrativo" ${categoriaAtual === 'Administrativo' ? 'selected' : ''}>🏛️ Administrativo</option>
                                         <option value="Marketing e Eventos" ${categoriaAtual === 'Marketing e Eventos' ? 'selected' : ''}>🎉 Marketing e Eventos</option>
+                                        <option value="Veículos" ${categoriaAtual === 'Veículos' ? 'selected' : ''}>🚗 Veículos</option>
+                                        <option value="Aquisições" ${categoriaAtual === 'Aquisições' ? 'selected' : ''}>🛒 Aquisições</option>
                                         <option value="Outros" ${categoriaAtual === 'Outros' ? 'selected' : ''}>📋 Outros</option>
                                     </select>
                                 </div>

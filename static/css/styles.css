@@ -63,6 +63,19 @@
     --cat-infraestrutura: #8d6e63;
     --cat-administrativo: #455a64;
     --cat-marketing-eventos: #651fff;
+    --cat-veiculos: #00bcd4;
+    --cat-aquisicoes: #ff5722;
+
+    /* Subcategorias Veículos */
+    --cat-gasolina: #00ACC1;
+    --cat-ipva: #5C6BC0;
+    --cat-seguro: #7E57C2;
+
+    /* Subcategorias Aquisições */
+    --cat-moveis: #FF7043;
+    --cat-eletrodomesticos: #EC407A;
+    --cat-software: #42A5F5;
+    --cat-maquinas: #78909C;
 
     /* Espaçamento */
     --spacing-xs: 0.25rem;
@@ -970,6 +983,53 @@ textarea.form-control {
 .badge-Marketing-e-Eventos,
 .badge-dot.badge-Marketing-e-Eventos {
     background-color: var(--cat-marketing-eventos) !important;
+}
+
+.badge-Veículos,
+.badge-dot.badge-Veículos {
+    background-color: var(--cat-veiculos) !important;
+}
+
+.badge-Aquisições,
+.badge-dot.badge-Aquisições {
+    background-color: var(--cat-aquisicoes) !important;
+}
+
+/* Subcategorias Veículos */
+.badge-Gasolina,
+.badge-dot.badge-Gasolina {
+    background-color: var(--cat-gasolina) !important;
+}
+
+.badge-IPVA,
+.badge-dot.badge-IPVA {
+    background-color: var(--cat-ipva) !important;
+}
+
+.badge-Seguro,
+.badge-dot.badge-Seguro {
+    background-color: var(--cat-seguro) !important;
+}
+
+/* Subcategorias Aquisições */
+.badge-Móveis,
+.badge-dot.badge-Móveis {
+    background-color: var(--cat-moveis) !important;
+}
+
+.badge-Eletrodomésticos,
+.badge-dot.badge-Eletrodomésticos {
+    background-color: var(--cat-eletrodomesticos) !important;
+}
+
+.badge-Software,
+.badge-dot.badge-Software {
+    background-color: var(--cat-software) !important;
+}
+
+.badge-Máquinas,
+.badge-dot.badge-Máquinas {
+    background-color: var(--cat-maquinas) !important;
 }
 
 /* SUBCATEGORIAS */

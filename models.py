@@ -13,12 +13,68 @@ import logging
 
 # 2. Bibliotecas externas
 from flask_sqlalchemy import SQLAlchemy
+from flask_login import UserMixin
+from werkzeug.security import generate_password_hash, check_password_hash
 
 # Configuração de logging
 logger = logging.getLogger(__name__)
 
 # Instância do SQLAlchemy
 db = SQLAlchemy()
+
+
+class User(db.Model, UserMixin):
+    """
+    Modelo de usuário para autenticação.
+    
+    Attributes:
+        id: Identificador único do usuário
+        email: Email único usado como login
+        password_hash: Hash da senha (nunca armazena senha em texto)
+        nome: Nome de exibição do usuário
+        role: Papel do usuário ('admin' ou 'user')
+        ativo: Se o usuário pode fazer login
+        created_at: Data de criação da conta
+        last_login: Último acesso ao sistema
+    """
+    __tablename__ = 'users'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(120), unique=True, nullable=False, index=True)
+    password_hash = db.Column(db.String(256), nullable=False)
+    nome = db.Column(db.String(100), nullable=False)
+    role = db.Column(db.String(20), default='user')  # 'admin' ou 'user'
+    ativo = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    last_login = db.Column(db.DateTime, nullable=True)
+    
+    def __repr__(self) -> str:
+        return f'<User {self.email}>'
+    
+    def set_password(self, password: str) -> None:
+        """Hash da senha usando Werkzeug."""
+        self.password_hash = generate_password_hash(password)
+    
+    def check_password(self, password: str) -> bool:
+        """Verifica senha contra hash armazenado."""
+        return check_password_hash(self.password_hash, password)
+    
+    @property
+    def is_admin(self) -> bool:
+        """Verifica se usuário tem role de administrador."""
+        return self.role == 'admin'
+    
+    def to_dict(self) -> dict:
+        """Converte usuário para dicionário (sem senha)."""
+        return {
+            'id': self.id,
+            'email': self.email,
+            'nome': self.nome,
+            'role': self.role,
+            'ativo': self.ativo,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'last_login': self.last_login.isoformat() if self.last_login else None
+        }
 
 
 class Transacao(db.Model):

@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+
+{% block title %}Gerenciar Usuários - GestorBot{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-people"></i> Usuários</h1>
+    <a href="{{ url_for('admin.usuario_novo') }}" class="btn btn-primary">
+        <i class="bi bi-person-plus"></i> Novo Usuário
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Nome</th>
+                        <th>Email</th>
+                        <th>Perfil</th>
+                        <th>Status</th>
+                        <th>Último Acesso</th>
+                        <th class="text-end">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in usuarios %}
+                    <tr>
+                        <td>
+                            <strong>{{ user.nome }}</strong>
+                        </td>
+                        <td>{{ user.email }}</td>
+                        <td>
+                            {% if user.is_admin %}
+                            <span class="badge bg-warning text-dark">
+                                <i class="bi bi-shield-check"></i> Admin
+                            </span>
+                            {% else %}
+                            <span class="badge bg-secondary">
+                                <i class="bi bi-person"></i> Usuário
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if user.ativo %}
+                            <span class="badge bg-success">Ativo</span>
+                            {% else %}
+                            <span class="badge bg-danger">Inativo</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if user.last_login %}
+                            {{ user.last_login.strftime('%d/%m/%Y %H:%M') }}
+                            {% else %}
+                            <span class="text-muted">Nunca</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('admin.usuario_editar', user_id=user.id) }}"
+                                    class="btn btn-outline-primary" title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+
+                                <button type="button" class="btn btn-outline-secondary" title="Resetar Senha"
+                                    data-bs-toggle="modal" data-bs-target="#modal-reset-{{ user.id }}">
+                                    <i class="bi bi-key"></i>
+                                </button>
+
+                                <form action="{{ url_for('admin.usuario_toggle', user_id=user.id) }}" method="POST"
+                                    class="d-inline">
+                                    <button type="submit"
+                                        class="btn btn-outline-{{ 'danger' if user.ativo else 'success' }}"
+                                        title="{{ 'Desativar' if user.ativo else 'Ativar' }}">
+                                        <i class="bi bi-{{ 'person-dash' if user.ativo else 'person-check' }}"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% if usuarios|length == 0 %}
+<div class="text-center py-5">
+    <i class="bi bi-people text-muted" style="font-size: 4rem;"></i>
+    <p class="text-muted mt-3">Nenhum usuário cadastrado.</p>
+</div>
+{% endif %}
+
+<!-- Modais de Reset de Senha -->
+{% for user in usuarios %}
+<div class="modal fade" id="modal-reset-{{ user.id }}" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-key"></i> Resetar Senha
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('admin.usuario_reset_senha', user_id=user.id) }}" method="POST">
+                <div class="modal-body">
+                    <p>Resetar senha de <strong>{{ user.nome }}</strong>?</p>
+                    <div class="mb-3">
+                        <label class="form-label">Nova Senha</label>
+                        <input type="password" name="nova_senha" class="form-control" minlength="6"
+                            placeholder="Mínimo 6 caracteres" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="bi bi-check"></i> Resetar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}

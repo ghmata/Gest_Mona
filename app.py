@@ -10,12 +10,14 @@ import os
 import logging
 
 # 2. Bibliotecas externas
+from datetime import timedelta
 from flask import Flask, request, render_template, jsonify
 from flask_cors import CORS
+from flask_login import LoginManager
 
 # 3. Imports locais
 from config import Config
-from models import db
+from models import db, User
 
 # Configurar logging
 logging.basicConfig(
@@ -54,6 +56,21 @@ def create_app(config_override: dict = None) -> Flask:
     # Inicializar banco de dados
     db.init_app(app)
     
+    # Inicializar Flask-Login
+    login_manager = LoginManager()
+    login_manager.init_app(app)
+    login_manager.login_view = 'auth.login'
+    login_manager.login_message = Config.LOGIN_MESSAGE
+    login_manager.login_message_category = 'warning'
+    
+    # Configurar duração do cookie "Lembrar-me"
+    app.config['REMEMBER_COOKIE_DURATION'] = timedelta(seconds=Config.REMEMBER_COOKIE_DURATION)
+    
+    @login_manager.user_loader
+    def load_user(user_id):
+        """Callback para carregar usuário da sessão."""
+        return User.query.get(int(user_id))
+    
     # Inicializar CORS
     CORS(app, resources={
         r"/api/*": {"origins": "*"},
@@ -76,11 +93,15 @@ def create_app(config_override: dict = None) -> Flask:
     from routes.upload import bp as upload_bp
     from routes.transacoes import bp as transacoes_bp
     from routes.api import bp as api_bp
+    from routes.auth import bp as auth_bp
+    from routes.admin import bp as admin_bp
     
     app.register_blueprint(main_bp)
     app.register_blueprint(upload_bp)
     app.register_blueprint(transacoes_bp)
     app.register_blueprint(api_bp)
+    app.register_blueprint(auth_bp)
+    app.register_blueprint(admin_bp)
     
     # Rota de Debug de Configuração (REMOVER EM PRODUÇÃO DEPOIS)
     @app.route('/config-check')
@@ -112,6 +133,13 @@ def create_app(config_override: dict = None) -> Flask:
         if request.accept_mimetypes.accept_json and not request.accept_mimetypes.accept_html:
             return jsonify({'sucesso': False, 'erro': 'Recurso não encontrado.'}), 404
         return render_template('404.html'), 404
+
+    @app.errorhandler(403)
+    def forbidden(error):
+        """Tratamento para acesso negado."""
+        if request.accept_mimetypes.accept_json and not request.accept_mimetypes.accept_html:
+            return jsonify({'sucesso': False, 'erro': 'Acesso negado.'}), 403
+        return render_template('403.html'), 403
 
     @app.errorhandler(500)
     def internal_error(error):

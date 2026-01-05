@@ -75,6 +75,14 @@ class Config:
     # Altere para uma senha personalizada via .env ou aqui diretamente
     SENHA_EXCLUSAO: str = os.getenv('SENHA_EXCLUSAO', 'mona2026')
     
+    # Configurações de Autenticação
+    # AUTH_ENABLED: permite desativar toda autenticação (útil para rollback)
+    AUTH_ENABLED: bool = os.getenv('AUTH_ENABLED', 'True').lower() == 'true'
+    # Tempo que o cookie "Lembrar-me" permanece válido (30 dias)
+    REMEMBER_COOKIE_DURATION: int = 60 * 60 * 24 * 30
+    # Mensagem exibida quando usuário tenta acessar rota protegida
+    LOGIN_MESSAGE: str = 'Por favor, faça login para acessar esta página.'
+    
     # Categorias de despesas para MONA Beach Club Joaquina
     # Estrutura hierárquica: Categoria Principal → Subcategorias
     CATEGORIAS_SUBCATEGORIAS: dict = {
@@ -133,6 +141,20 @@ class Config:
             'Eventos',            # Festas, confraternizações, shows
             'Marketing',          # Publicidade, redes sociais, anúncios
             'Aluguel',            # Aluguel de espaço para eventos
+            'Outros'
+        ],
+        'Veículos': [
+            'Gasolina',           # Combustível para veículos
+            'Manutenção',         # Reparos e revisões
+            'IPVA',               # Imposto sobre veículos
+            'Seguro',             # Seguro automotivo
+            'Outros'
+        ],
+        'Aquisições': [
+            'Móveis',             # Mesas, cadeiras, estantes
+            'Eletrodomésticos',   # Geladeira, fogão, micro-ondas
+            'Software',           # Licenças, sistemas, aplicativos
+            'Máquinas',           # Equipamentos industriais
             'Outros'
         ],
         'Outros': [

@@ -60,6 +60,35 @@
                 <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-light btn-sm">
                     <i class="bi bi-graph-up"></i> Dashboard
                 </a>
+
+                {% if current_user.is_authenticated %}
+                <!-- Botão Admin (só para admins) -->
+                {% if current_user.is_admin %}
+                <a href="{{ url_for('admin.usuarios') }}" class="btn btn-outline-warning btn-sm" title="Administração">
+                    <i class="bi bi-gear"></i>
+                </a>
+                {% endif %}
+
+                <!-- Dropdown do usuário -->
+                <div class="dropdown">
+                    <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button"
+                        data-bs-toggle="dropdown">
+                        <i class="bi bi-person-circle"></i>
+                        <span class="d-none d-md-inline">{{ current_user.nome }}</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><span class="dropdown-item-text text-muted small">{{ current_user.email }}</span></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li>
+                            <a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}">
+                                <i class="bi bi-box-arrow-right"></i> Sair
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                {% endif %}
             </div>
             <a class="navbar-brand order-2 order-lg-1" href="{{ url_for('main.home') }}">
                 🏖️ Mona Beachclub

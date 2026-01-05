@@ -15,6 +15,7 @@ from flask import Blueprint, request, jsonify
 from config import Config
 from models import db, Transacao, get_transacoes_mes
 from utils.helpers import formatar_valor, validar_data
+from utils.auth_decorators import auth_if_enabled
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +23,7 @@ bp = Blueprint('transacoes', __name__)
 
 
 @bp.route('/transacao', methods=['POST'])
+@auth_if_enabled
 def criar_transacao():
     """
     Salva uma nova transação confirmada pelo usuário.
@@ -134,6 +136,7 @@ def criar_transacao():
 
 
 @bp.route('/transacoes')
+@auth_if_enabled
 def listar_transacoes():
     """Lista transações com filtros opcionais."""
     try:
@@ -176,6 +179,7 @@ def listar_transacoes():
 
 
 @bp.route('/transacao/<int:id>', methods=['DELETE'])
+@auth_if_enabled
 def excluir_transacao(id: int):
     """
     Exclui uma transação pelo ID.
@@ -223,6 +227,7 @@ def excluir_transacao(id: int):
 
 
 @bp.route('/transacao/<int:id>', methods=['PUT', 'PATCH'])
+@auth_if_enabled
 def editar_transacao(id: int):
     """
     Edita uma transação existente.

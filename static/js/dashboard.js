@@ -28,6 +28,8 @@ const CORES_DESPESAS = {
     'Infraestrutura': '#8d6e63',
     'Administrativo': '#455a64',
     'Marketing e Eventos': '#651fff',
+    'Veículos': '#00bcd4',
+    'Aquisições': '#ff5722',
     'Outros': '#6c757d'
 };
 
@@ -84,6 +86,17 @@ const CORES_SUBCATEGORIAS = {
     // Marketing e Eventos - tons vibrantes
     'Eventos': '#B33771',            // Magenta escuro
     'Marketing': '#00B894',          // Verde menta
+
+    // Veículos - tons azuis/metálicos
+    'Gasolina': '#00ACC1',           // Ciano
+    'IPVA': '#5C6BC0',               // Índigo
+    'Seguro': '#7E57C2',             // Roxo médio
+
+    // Aquisições - tons quentes
+    'Móveis': '#FF7043',             // Laranja coral
+    'Eletrodomésticos': '#EC407A',   // Rosa
+    'Software': '#42A5F5',           // Azul claro
+    'Máquinas': '#78909C',           // Cinza azulado
 
     // Comum
     'Outros': '#95A5A6',             // Cinza médio

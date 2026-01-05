@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+
+{% block title %}Login - GestorBot{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-header">
+            <h1>🏖️ Mona Beachclub</h1>
+            <p class="text-muted">Controle Financeiro</p>
+        </div>
+
+        <form method="POST" action="{{ url_for('auth.login') }}">
+            <div class="mb-3">
+                <label for="email" class="form-label">Email/Login</label>
+                <input type="text" 
+                       class="form-control form-control-lg" 
+                       id="email" 
+                       name="email" 
+                       placeholder="seu@email.com"
+                       autocomplete="username"
+                       required 
+                       autofocus>
+            </div>
+
+            <div class="mb-3">
+                <label for="password" class="form-label">Senha</label>
+                <div class="input-group">
+                    <input type="password" 
+                           class="form-control form-control-lg" 
+                           id="password" 
+                           name="password" 
+                           placeholder="••••••••"
+                           autocomplete="current-password"
+                           required>
+                    <button class="btn btn-outline-secondary" type="button" id="toggle-password">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="mb-4 form-check">
+                <input type="checkbox" class="form-check-input" id="remember" name="remember">
+                <label class="form-check-label" for="remember">
+                    Lembrar-me por 30 dias
+                </label>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-lg w-100">
+                <i class="bi bi-box-arrow-in-right"></i> Entrar
+            </button>
+        </form>
+    </div>
+</div>
+
+<style>
+.login-container {
+    min-height: calc(100vh - 200px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.login-card {
+    background: var(--card-bg, #fff);
+    border-radius: 16px;
+    padding: 2rem;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+}
+
+.login-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.login-header h1 {
+    font-size: 1.75rem;
+    margin-bottom: 0.25rem;
+}
+
+.login-header p {
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+/* Dark mode support */
+[data-theme="dark"] .login-card {
+    background: var(--card-bg-dark, #1a1f2e);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+}
+</style>
+
+<script>
+document.getElementById('toggle-password').addEventListener('click', function() {
+    const passwordInput = document.getElementById('password');
+    const icon = this.querySelector('i');
+    
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        icon.classList.remove('bi-eye');
+        icon.classList.add('bi-eye-slash');
+    } else {
+        passwordInput.type = 'password';
+        icon.classList.remove('bi-eye-slash');
+        icon.classList.add('bi-eye');
+    }
+});
+</script>
+{% endblock %}
