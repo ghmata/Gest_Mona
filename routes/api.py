@@ -13,7 +13,7 @@ from datetime import date
 from flask import Blueprint, request, jsonify
 
 from config import Config
-from models import get_totais_mes, get_gastos_por_categoria, get_gastos_por_subcategoria
+from models import get_totais_mes, get_gastos_por_categoria, get_gastos_por_subcategoria, get_totais_diarios_mes
 
 logger = logging.getLogger(__name__)
 
@@ -143,5 +143,46 @@ def api_gastos_subcategoria():
         return jsonify({
             'sucesso': False,
             'erro': 'Erro ao buscar gastos por subcategoria.'
+        }), 500
+
+
+@bp.route('/dados-diarios')
+def api_dados_diarios():
+    """
+    API para obter dados diários (evolução) do mês.
+    
+    Query Parameters:
+        - mes: int
+        - ano: int
+        
+    Response JSON:
+        {
+            "sucesso": true,
+            "dias": [1, 2, ...],
+            "receitas": [...],
+            "despesas": [...]
+        }
+    """
+    try:
+        hoje = date.today()
+        mes = request.args.get('mes', hoje.month, type=int)
+        ano = request.args.get('ano', hoje.year, type=int)
+        
+        dados = get_totais_diarios_mes(ano, mes)
+        
+        return jsonify({
+            'sucesso': True,
+            'mes': mes,
+            'ano': ano,
+            'dias': dados['dias'],
+            'receitas': dados['receitas'],
+            'despesas': dados['despesas']
+        }), 200
+        
+    except Exception as e:
+        logger.error(f"Erro na API de dados diários: {e}")
+        return jsonify({
+            'sucesso': False,
+            'erro': 'Erro ao buscar dados diários.'
         }), 500
 

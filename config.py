@@ -97,7 +97,8 @@ class Config:
             'Outros'
         ],
         'Bebidas': [
-            'Bebidas',            # Água, refrigerantes, sucos, café
+            'Bebidas',            # Água, sucos, café
+            'Refrigerante',       # Coca-Cola, Guaraná, etc.
             'Cervejas',           # Budweiser, Heineken, Stella, Corona, etc.
             'Destilados',         # Gin, vodka, whisky, rum, tequila (drinks)
             'Vinhos',             # Champagnes, espumantes, vinhos

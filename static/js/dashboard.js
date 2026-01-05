@@ -318,6 +318,9 @@ const inicializarDashboard = () => {
 
     // Inicializar mini dashboard de subcategorias
     inicializarMiniDashboard();
+
+    // Inicializar gráfico de evolução (Modulo F2)
+    inicializarGraficoEvolucao();
 };
 
 // Iniciar quando DOM estiver pronto
@@ -472,4 +475,134 @@ const fecharMiniDashboard = () => {
     if (container) {
         container.style.display = 'none';
     }
+};
+
+// =============================================================================
+// GRÁFICO DE EVOLUÇÃO DIÁRIA (MODULO F2)
+// =============================================================================
+
+let chartEvolucao = null;
+
+const inicializarGraficoEvolucao = async () => {
+    const canvas = document.getElementById('grafico-evolucao');
+    if (!canvas) return;
+
+    try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const mes = urlParams.get('mes') || new Date().getMonth() + 1;
+        const ano = urlParams.get('ano') || new Date().getFullYear();
+
+        const response = await fetch(`/api/dados-diarios?mes=${mes}&ano=${ano}`);
+        const data = await response.json();
+
+        if (data.sucesso) {
+            renderizarGraficoEvolucao(data);
+            configurarFiltrosEvolucao(data);
+        }
+    } catch (error) {
+        console.error('Erro ao carregar gráfico de evolução:', error);
+    }
+};
+
+const renderizarGraficoEvolucao = (dados, filtro = 'AMBOS') => {
+    const ctx = document.getElementById('grafico-evolucao').getContext('2d');
+
+    if (chartEvolucao) {
+        chartEvolucao.destroy();
+    }
+
+    const datasets = [];
+
+    // Dataset Receitas
+    if (filtro === 'AMBOS' || filtro === 'RECEITAS') {
+        datasets.push({
+            label: 'Receitas',
+            data: dados.receitas,
+            borderColor: '#198754', // Verde Success
+            backgroundColor: 'rgba(25, 135, 84, 0.1)',
+            fill: true,
+            tension: 0.4,
+            pointRadius: 4,
+            pointHoverRadius: 6
+        });
+    }
+
+    // Dataset Despesas
+    if (filtro === 'AMBOS' || filtro === 'DESPESAS') {
+        datasets.push({
+            label: 'Despesas',
+            data: dados.despesas,
+            borderColor: '#dc3545', // Vermelho Danger
+            backgroundColor: 'rgba(220, 53, 69, 0.1)',
+            fill: true,
+            tension: 0.4,
+            pointRadius: 4,
+            pointHoverRadius: 6
+        });
+    }
+
+    chartEvolucao = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: dados.dias,
+            datasets: datasets
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                    callbacks: {
+                        label: function (context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed.y !== null) {
+                                label += new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(context.parsed.y);
+                            }
+                            return label;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function (value) {
+                            return 'R$ ' + value; // Simplificado para economizar espaço
+                        }
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            },
+            interaction: {
+                mode: 'nearest',
+                axis: 'x',
+                intersect: false
+            }
+        }
+    });
+};
+
+const configurarFiltrosEvolucao = (dados) => {
+    document.getElementById('btnEvolucaoAmbos').addEventListener('change', () => {
+        renderizarGraficoEvolucao(dados, 'AMBOS');
+    });
+    document.getElementById('btnEvolucaoReceitas').addEventListener('change', () => {
+        renderizarGraficoEvolucao(dados, 'RECEITAS');
+    });
+    document.getElementById('btnEvolucaoDespesas').addEventListener('change', () => {
+        renderizarGraficoEvolucao(dados, 'DESPESAS');
+    });
 };

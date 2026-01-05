@@ -43,6 +43,7 @@ def criar_transacao():
         valor = data.get('valor')
         data_str = data.get('data')
         categoria = data.get('categoria')
+        subcategoria = data.get('subcategoria', '')  # Adicionar subcategoria
         descricao = data.get('descricao', '')
         estabelecimento = data.get('estabelecimento', '')
         comprovante_url = data.get('comprovante_url', '')
@@ -109,6 +110,7 @@ def criar_transacao():
             valor=valor_float,
             data=data_transacao,
             categoria=categoria,
+            subcategoria=subcategoria[:50] if subcategoria else None,  # Incluir subcategoria
             descricao=descricao[:200] if descricao else None,
             estabelecimento=estabelecimento[:100] if estabelecimento else None,
             comprovante_url=comprovante_url[:500] if comprovante_url else None,

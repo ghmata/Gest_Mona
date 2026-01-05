@@ -756,6 +756,12 @@ Por exemplo: se o nome contém "energia", classifique como "Energia"; se contém
             ('champagne', 'Bebidas', 'Vinhos'),
             ('energetico', 'Bebidas', 'Energético'),
             ('red bull', 'Bebidas', 'Energético'),
+            ('refrigerante', 'Bebidas', 'Refrigerante'),
+            ('coca', 'Bebidas', 'Refrigerante'),
+            ('guarana', 'Bebidas', 'Refrigerante'),
+            ('fanta', 'Bebidas', 'Refrigerante'),
+            ('sprite', 'Bebidas', 'Refrigerante'),
+            ('pepsi', 'Bebidas', 'Refrigerante'),
             ('bebida', 'Bebidas', 'Bebidas'),
         ]
         

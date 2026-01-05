@@ -53,6 +53,7 @@ document.addEventListener('DOMContentLoaded', function () {
         ],
         'Bebidas': [
             { value: 'Bebidas', label: '🥤 Bebidas' },
+            { value: 'Refrigerante', label: '🥤 Refrigerante' },
             { value: 'Cervejas', label: '🍺 Cervejas' },
             { value: 'Destilados', label: '🍸 Destilados' },
             { value: 'Vinhos', label: '🍾 Vinhos' },
@@ -142,7 +143,8 @@ document.addEventListener('DOMContentLoaded', function () {
         { regex: /destilado|gin|vodka|whisky|rum|tequila|cacha[cç]a/i, categoria: 'Bebidas', subcategoria: 'Destilados' },
         { regex: /vinho|champagne|espumante/i, categoria: 'Bebidas', subcategoria: 'Vinhos' },
         { regex: /red\s*bull|monster|energ[eé]tico/i, categoria: 'Bebidas', subcategoria: 'Energético' },
-        { regex: /bebida|refrigerante|[aá]gua|suco|coca/i, categoria: 'Bebidas', subcategoria: 'Bebidas' },
+        { regex: /refrigerante|coca|guarana|fanta|sprite|pepsi/i, categoria: 'Bebidas', subcategoria: 'Refrigerante' },
+        { regex: /bebida|[aá]gua|suco/i, categoria: 'Bebidas', subcategoria: 'Bebidas' },
 
         // Operacional
         { regex: /embalagem|descart[aá]vel|guardanapo|sacola/i, categoria: 'Operacional', subcategoria: 'Embalagens' },
@@ -236,6 +238,10 @@ document.addEventListener('DOMContentLoaded', function () {
     // =========================================
     btnNovaDespesa.addEventListener('click', function () {
         tipoAtual = 'DESPESA';
+        // Atualiza campo hidden do formulário
+        const tipoInput = document.querySelector('#form-conferencia input[name="tipo"]');
+        if (tipoInput) tipoInput.value = 'DESPESA';
+
         document.getElementById('modal-escolha-titulo').textContent = 'Nova Despesa';
         document.getElementById('modal-escolha-header').className = 'modal-header bg-primary text-white';
         document.querySelector('#modal-escolha-label i').className = 'bi bi-receipt';
@@ -248,6 +254,10 @@ document.addEventListener('DOMContentLoaded', function () {
     if (btnNovaReceita) {
         btnNovaReceita.addEventListener('click', function () {
             tipoAtual = 'RECEITA';
+            // Atualiza campo hidden do formulário
+            const tipoInput = document.querySelector('#form-conferencia input[name="tipo"]');
+            if (tipoInput) tipoInput.value = 'RECEITA';
+
             document.getElementById('modal-escolha-titulo').textContent = 'Nova Receita';
             document.getElementById('modal-escolha-header').className = 'modal-header bg-success text-white';
             document.querySelector('#modal-escolha-label i').className = 'bi bi-cash-stack';
@@ -380,6 +390,9 @@ document.addEventListener('DOMContentLoaded', function () {
         try {
             btnConfirmar.disabled = true;
             btnConfirmar.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Salvando...';
+
+            // DEBUG: Verificar dados enviados
+            console.log('📤 Dados enviados para /transacao:', dados);
 
             const response = await fetch('/transacao', {
                 method: 'POST',

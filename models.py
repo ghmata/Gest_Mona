@@ -364,3 +364,56 @@ def get_gastos_por_subcategoria(ano: int, mes: int, categoria: str) -> dict:
     except Exception as e:
         logger.error(f"Erro ao agrupar gastos por subcategoria {mes}/{ano}: {e}")
         return {}
+
+
+def get_totais_diarios_mes(ano: int, mes: int) -> dict:
+    """
+    Calcula totais diários para o gráfico de evolução (Dias x Valores).
+    
+    Args:
+        ano: Ano desejado
+        mes: Mês desejado
+    
+    Returns:
+        dict: {
+            'dias': [1, 2, ...], 
+            'receitas': [0.0, ...], 
+            'despesas': [0.0, ...]
+        }
+    """
+    try:
+        from calendar import monthrange
+        
+        # Determina quantos dias tem o mês
+        _, num_dias = monthrange(ano, mes)
+        
+        # Inicializa estruturas
+        dias = list(range(1, num_dias + 1))
+        # Dicionários para acesso rápido: {dia: valor}
+        receitas_map = {d: 0.0 for d in dias}
+        despesas_map = {d: 0.0 for d in dias}
+        
+        # Busca transações
+        transacoes = get_transacoes_mes(ano, mes)
+        
+        for t in transacoes:
+            dia = t.data.day
+            if t.tipo == 'RECEITA':
+                receitas_map[dia] += t.valor
+            elif t.tipo == 'DESPESA':
+                despesas_map[dia] += t.valor
+        
+        # Converte para listas ordenadas (para o Chart.js)
+        # Atenção: Retorna listas alinhadas pelo índice
+        resultado = {
+            'dias': dias,
+            'receitas': [receitas_map[d] for d in dias],
+            'despesas': [despesas_map[d] for d in dias]
+        }
+        
+        logger.info(f"Dados diários processados para {mes}/{ano}")
+        return resultado
+        
+    except Exception as e:
+        logger.error(f"Erro ao calcular totais diários: {e}")
+        return {'dias': [], 'receitas': [], 'despesas': []}
