@@ -646,33 +646,55 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 totalSucesso++;
                 const dados = item.dados;
+
                 // Usa categorias baseado no tipo selecionado
                 const categorias = tipoAtual === 'RECEITA' ? CATEGORIAS_RECEITA : CATEGORIAS_DESPESA;
                 const categoriasOptions = categorias.map(c =>
-                    `<option value="${c.value}" ${dados.categoria === c.value ? 'selected' : ''}>${c.label}</option>`
+                    `<option value="${c.value}" ${dados.categoria === c.value || dados.subcategoria === c.value ? 'selected' : ''}>${c.label}</option>`
+                ).join('');
+
+                // Gera opções de subcategoria baseado na categoria detectada
+                const categoriaAtual = dados.categoria || 'Outros';
+                const subcategoriaAtual = dados.subcategoria || 'Outros';
+                const subcats = CATEGORIAS_SUBCATEGORIAS[categoriaAtual] || CATEGORIAS_SUBCATEGORIAS['Outros'];
+                const subcategoriasOptions = subcats.map(s =>
+                    `<option value="${s.value}" ${s.value === subcategoriaAtual ? 'selected' : ''}>${s.label}</option>`
                 ).join('');
 
                 container.innerHTML += `
                     <div class="card mb-2 border-success item-massa" data-index="${index}">
                         <div class="card-body p-2">
                             <div class="row g-2 align-items-center">
-                                <div class="col-12 col-md-2">
-                                    <small class="text-muted d-block">${item.nome_arquivo}</small>
+                                <div class="col-12 col-xl-2">
+                                    <small class="text-muted d-block text-truncate" title="${item.nome_arquivo}">${item.nome_arquivo}</small>
                                 </div>
-                                <div class="col-6 col-md-2">
+                                <div class="col-6 col-xl-1">
                                     <input type="date" class="form-control form-control-sm" 
                                         name="data_${index}" value="${dados.data || new Date().toISOString().split('T')[0]}">
                                 </div>
-                                <div class="col-6 col-md-2">
+                                <div class="col-6 col-xl-1">
                                     <input type="number" step="0.01" class="form-control form-control-sm" 
                                         name="valor_${index}" value="${dados.valor_total?.toFixed(2) || '0.00'}" placeholder="Valor">
                                 </div>
-                                <div class="col-12 col-md-3">
-                                    <select class="form-select form-select-sm" name="categoria_${index}">
-                                        ${categoriasOptions}
+                                <div class="col-6 col-xl-2">
+                                    <select class="form-select form-select-sm" name="categoria_${index}" 
+                                        onchange="atualizarSubcatMassa(this, ${index})">
+                                        <option value="Insumos" ${categoriaAtual === 'Insumos' ? 'selected' : ''}>🥬 Insumos</option>
+                                        <option value="Bebidas" ${categoriaAtual === 'Bebidas' ? 'selected' : ''}>🥤 Bebidas</option>
+                                        <option value="Operacional" ${categoriaAtual === 'Operacional' ? 'selected' : ''}>🔧 Operacional</option>
+                                        <option value="Pessoal" ${categoriaAtual === 'Pessoal' ? 'selected' : ''}>👥 Pessoal</option>
+                                        <option value="Infraestrutura" ${categoriaAtual === 'Infraestrutura' ? 'selected' : ''}>🏠 Infraestrutura</option>
+                                        <option value="Administrativo" ${categoriaAtual === 'Administrativo' ? 'selected' : ''}>🏛️ Administrativo</option>
+                                        <option value="Marketing e Eventos" ${categoriaAtual === 'Marketing e Eventos' ? 'selected' : ''}>🎉 Marketing e Eventos</option>
+                                        <option value="Outros" ${categoriaAtual === 'Outros' ? 'selected' : ''}>📋 Outros</option>
                                     </select>
                                 </div>
-                                <div class="col-12 col-md-3">
+                                <div class="col-6 col-xl-2">
+                                    <select class="form-select form-select-sm" name="subcategoria_${index}" id="subcat_${index}">
+                                        ${subcategoriasOptions}
+                                    </select>
+                                </div>
+                                <div class="col-12 col-xl-4">
                                     <input type="text" class="form-control form-control-sm" 
                                         name="estabelecimento_${index}" value="${dados.estabelecimento || ''}" placeholder="Estabelecimento">
                                 </div>
@@ -694,6 +716,18 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
 
+        // Função global para atualizar subcategorias no upload em massa
+        window.atualizarSubcatMassa = function (selectCategoria, index) {
+            const categoria = selectCategoria.value;
+            const selectSubcat = document.getElementById(`subcat_${index}`);
+            if (!selectSubcat) return;
+
+            const subcats = CATEGORIAS_SUBCATEGORIAS[categoria] || CATEGORIAS_SUBCATEGORIAS['Outros'];
+            selectSubcat.innerHTML = subcats.map(s =>
+                `<option value="${s.value}">${s.label}</option>`
+            ).join('');
+        };
+
         // Confirmar todos
         document.getElementById('btn-confirmar-massa').addEventListener('click', async function () {
             const btn = this;
@@ -712,6 +746,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     data: document.querySelector(`[name="data_${index}"]`)?.value,
                     valor: parseFloat(document.querySelector(`[name="valor_${index}"]`)?.value || 0),
                     categoria: document.querySelector(`[name="categoria_${index}"]`)?.value,
+                    subcategoria: document.querySelector(`[name="subcategoria_${index}"]`)?.value,
                     estabelecimento: document.querySelector(`[name="estabelecimento_${index}"]`)?.value,
                     descricao: document.querySelector(`[name="descricao_${index}"]`)?.value,
                     comprovante_url: document.querySelector(`[name="comprovante_${index}"]`)?.value
