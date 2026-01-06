@@ -4,6 +4,39 @@
  * Suporta imagens (JPG, PNG, etc.) e PDFs
  */
 
+// =========================================
+// Proteção CSRF para requisições AJAX
+// =========================================
+
+/**
+ * Obtém o token CSRF da meta tag
+ * @returns {string} Token CSRF ou string vazia
+ */
+function getCsrfToken() {
+    const meta = document.querySelector('meta[name="csrf-token"]');
+    return meta ? meta.getAttribute('content') : '';
+}
+
+/**
+ * Wrapper para fetch que adiciona automaticamente o header CSRF
+ * @param {string} url - URL da requisição
+ * @param {object} options - Opções do fetch
+ * @returns {Promise} Resposta do fetch
+ */
+function csrfFetch(url, options = {}) {
+    const csrfToken = getCsrfToken();
+
+    // Garante que headers existe
+    options.headers = options.headers || {};
+
+    // Adiciona o token CSRF
+    if (csrfToken) {
+        options.headers['X-CSRFToken'] = csrfToken;
+    }
+
+    return fetch(url, options);
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     // =========================================
     // Elementos da página Home
@@ -333,7 +366,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             // Enviar para API (indicando se é PDF)
-            const response = await fetch('/upload-nota', {
+            const response = await csrfFetch('/upload-nota', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -398,7 +431,7 @@ document.addEventListener('DOMContentLoaded', function () {
             // DEBUG: Verificar dados enviados
             console.log('📤 Dados enviados para /transacao:', dados);
 
-            const response = await fetch('/transacao', {
+            const response = await csrfFetch('/transacao', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(dados)
@@ -643,7 +676,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     loadingTextEl.textContent = 'Analisando com IA...';
                 }
 
-                const response = await fetch('/upload-notas-massa', {
+                const response = await csrfFetch('/upload-notas-massa', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ arquivos })
@@ -805,7 +838,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 };
 
                 try {
-                    const response = await fetch('/transacao', {
+                    const response = await csrfFetch('/transacao', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(dados)

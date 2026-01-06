@@ -14,6 +14,7 @@ from datetime import timedelta
 from flask import Flask, request, render_template, jsonify
 from flask_cors import CORS
 from flask_login import LoginManager
+from flask_wtf.csrf import CSRFProtect
 
 # 3. Imports locais
 from config import Config
@@ -55,6 +56,9 @@ def create_app(config_override: dict = None) -> Flask:
     
     # Inicializar banco de dados
     db.init_app(app)
+    
+    # Inicializar proteção CSRF
+    csrf = CSRFProtect(app)
     
     # Inicializar Flask-Login
     login_manager = LoginManager()
