@@ -212,8 +212,10 @@ def analise_anual():
     """Renderiza o dashboard de análise anual."""
     from models import (
         get_totais_ano, get_totais_mensais_ano,
-        get_ranking_categorias_ano, get_ranking_receitas_ano
+        get_ranking_categorias_ano, get_ranking_receitas_ano,
+        get_transacoes_ano
     )
+    from utils.analytics import get_analise_completa
     
     try:
         hoje = date.today()
@@ -229,6 +231,10 @@ def analise_anual():
         # Rankings (Módulo F4)
         ranking_despesas = get_ranking_categorias_ano(ano, limite=5)
         ranking_receitas = get_ranking_receitas_ano(ano, limite=5)
+        
+        # Análise de fornecedores e insights (Módulo F5)
+        transacoes_despesas = get_transacoes_ano(ano, tipo='DESPESA')
+        analise = get_analise_completa(transacoes_despesas, totais)
         
         # Totais do ano anterior para comparativo
         ano_anterior = ano - 1
@@ -260,7 +266,10 @@ def analise_anual():
             'dados_mensais': dados_mensais,
             'dados_mensais_anterior': dados_mensais_anterior,
             'ranking_despesas': ranking_despesas,
-            'ranking_receitas': ranking_receitas
+            'ranking_receitas': ranking_receitas,
+            'fornecedores': analise['fornecedores'],
+            'palavras_chave': analise['palavras_chave'],
+            'insights': analise['insights']
         }
         
         return render_template('analise_anual.html', **dados)

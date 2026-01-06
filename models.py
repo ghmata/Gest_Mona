@@ -595,3 +595,37 @@ def get_ranking_receitas_ano(ano: int, limite: int = 5) -> list:
     except Exception as e:
         logger.error(f"Erro ao calcular ranking de receitas {ano}: {e}")
         return []
+
+
+def get_transacoes_ano(ano: int, tipo: str = None) -> list:
+    """
+    Obtém todas as transações de um ano específico.
+    
+    Args:
+        ano: Ano desejado
+        tipo: Opcional filtro 'DESPESA' ou 'RECEITA'
+    
+    Returns:
+        list: Lista de objetos Transacao
+    """
+    try:
+        inicio_ano = datetime(ano, 1, 1)
+        fim_ano = datetime(ano, 12, 31, 23, 59, 59)
+        
+        query = Transacao.query.filter(
+            Transacao.data >= inicio_ano,
+            Transacao.data <= fim_ano,
+            Transacao.status == 'CONFIRMADO'
+        )
+        
+        if tipo:
+            query = query.filter(Transacao.tipo == tipo)
+        
+        transacoes = query.order_by(Transacao.data.desc()).all()
+        
+        logger.info(f"Transações {ano} (tipo={tipo}): {len(transacoes)} registros")
+        return transacoes
+        
+    except Exception as e:
+        logger.error(f"Erro ao buscar transações do ano {ano}: {e}")
+        return []
