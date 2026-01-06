@@ -206,6 +206,62 @@ def dashboard():
         return redirect(url_for('main.home'))
 
 
+@bp.route('/analise-anual')
+@auth_if_enabled
+def analise_anual():
+    """Renderiza o dashboard de análise anual."""
+    from models import get_totais_ano, get_totais_mensais_ano
+    
+    try:
+        hoje = date.today()
+        ano = request.args.get('ano', hoje.year, type=int)
+        
+        if ano < 2000 or ano > 2100:
+            ano = hoje.year
+        
+        # Totais do ano atual
+        totais = get_totais_ano(ano)
+        dados_mensais = get_totais_mensais_ano(ano)
+        
+        # Totais do ano anterior para comparativo
+        ano_anterior = ano - 1
+        totais_anterior = get_totais_ano(ano_anterior)
+        dados_mensais_anterior = get_totais_mensais_ano(ano_anterior)
+        
+        # Calcula variações percentuais
+        def calcular_variacao(atual, anterior):
+            if anterior == 0:
+                return None  # N/A
+            return ((atual - anterior) / anterior) * 100
+        
+        variacao_receitas = calcular_variacao(totais['receitas'], totais_anterior['receitas'])
+        variacao_despesas = calcular_variacao(totais['despesas'], totais_anterior['despesas'])
+        variacao_lucro = calcular_variacao(totais['lucro'], totais_anterior['lucro']) if totais_anterior['lucro'] != 0 else None
+        
+        dados = {
+            'ano': ano,
+            'ano_anterior': ano_anterior,
+            'receitas': totais['receitas'],
+            'despesas': totais['despesas'],
+            'lucro': totais['lucro'],
+            'receitas_anterior': totais_anterior['receitas'],
+            'despesas_anterior': totais_anterior['despesas'],
+            'lucro_anterior': totais_anterior['lucro'],
+            'variacao_receitas': variacao_receitas,
+            'variacao_despesas': variacao_despesas,
+            'variacao_lucro': variacao_lucro,
+            'dados_mensais': dados_mensais,
+            'dados_mensais_anterior': dados_mensais_anterior
+        }
+        
+        return render_template('analise_anual.html', **dados)
+        
+    except Exception as e:
+        logger.error(f"Erro ao carregar análise anual: {e}")
+        flash('Erro ao carregar análise anual.', 'error')
+        return redirect(url_for('main.dashboard'))
+
+
 @bp.route('/receita')
 @auth_if_enabled
 def form_receita():

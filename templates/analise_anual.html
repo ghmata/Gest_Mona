@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+
+{% block title %}Análise Anual - {{ ano }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-3">
+    <!-- Cabeçalho com navegação de ano -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0">
+            <i class="bi bi-calendar3"></i> Análise Anual - {{ ano }}
+        </h4>
+        <div class="btn-group">
+            <a href="{{ url_for('main.analise_anual', ano=ano-1) }}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-chevron-left"></i> {{ ano - 1 }}
+            </a>
+            <a href="{{ url_for('main.analise_anual', ano=ano+1) }}" class="btn btn-outline-secondary btn-sm">
+                {{ ano + 1 }} <i class="bi bi-chevron-right"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- Cards de Totais Anuais -->
+    <div class="row g-3 mb-4">
+        <!-- Receitas -->
+        <div class="col-md-4">
+            <div class="card h-100 border-success">
+                <div class="card-body text-center">
+                    <p class="text-muted small mb-1">Receitas {{ ano }}</p>
+                    <h3 class="text-success mb-2">R$ {{ "%.2f"|format(receitas) }}</h3>
+                    {% if variacao_receitas is not none %}
+                    <small class="{% if variacao_receitas >= 0 %}text-success{% else %}text-danger{% endif %}">
+                        <i class="bi {% if variacao_receitas >= 0 %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
+                        {{ "%.1f"|format(variacao_receitas) }}% vs {{ ano_anterior }}
+                    </small>
+                    {% else %}
+                    <small class="text-muted">N/A (sem dados {{ ano_anterior }})</small>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Despesas -->
+        <div class="col-md-4">
+            <div class="card h-100 border-danger">
+                <div class="card-body text-center">
+                    <p class="text-muted small mb-1">Despesas {{ ano }}</p>
+                    <h3 class="text-danger mb-2">R$ {{ "%.2f"|format(despesas) }}</h3>
+                    {% if variacao_despesas is not none %}
+                    <small class="{% if variacao_despesas <= 0 %}text-success{% else %}text-danger{% endif %}">
+                        <i class="bi {% if variacao_despesas <= 0 %}bi-arrow-down{% else %}bi-arrow-up{% endif %}"></i>
+                        {{ "%.1f"|format(variacao_despesas|abs) }}% vs {{ ano_anterior }}
+                    </small>
+                    {% else %}
+                    <small class="text-muted">N/A (sem dados {{ ano_anterior }})</small>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Lucro -->
+        <div class="col-md-4">
+            <div class="card h-100 border-primary">
+                <div class="card-body text-center">
+                    <p class="text-muted small mb-1">Lucro {{ ano }}</p>
+                    <h3 class="{% if lucro >= 0 %}text-primary{% else %}text-warning{% endif %} mb-2">
+                        R$ {{ "%.2f"|format(lucro) }}
+                    </h3>
+                    {% if variacao_lucro is not none %}
+                    <small class="{% if variacao_lucro >= 0 %}text-success{% else %}text-danger{% endif %}">
+                        <i class="bi {% if variacao_lucro >= 0 %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
+                        {{ "%.1f"|format(variacao_lucro|abs) }}% vs {{ ano_anterior }}
+                    </small>
+                    {% else %}
+                    <small class="text-muted">N/A (sem dados {{ ano_anterior }})</small>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráfico de Evolução Mensal -->
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h6 class="mb-0"><i class="bi bi-graph-up"></i> Evolução Mensal - {{ ano }}</h6>
+            <div class="btn-group btn-group-sm" role="group">
+                <input type="radio" class="btn-check" name="btnAnual" id="btnAnualAmbos" autocomplete="off" checked>
+                <label class="btn btn-outline-secondary" for="btnAnualAmbos">Ambos</label>
+
+                <input type="radio" class="btn-check" name="btnAnual" id="btnAnualReceitas" autocomplete="off">
+                <label class="btn btn-outline-success" for="btnAnualReceitas">Receitas</label>
+
+                <input type="radio" class="btn-check" name="btnAnual" id="btnAnualDespesas" autocomplete="off">
+                <label class="btn btn-outline-danger" for="btnAnualDespesas">Despesas</label>
+
+                <input type="checkbox" class="btn-check" id="btnCompararAnterior" autocomplete="off">
+                <label class="btn btn-outline-info" for="btnCompararAnterior" title="Comparar com {{ ano_anterior }}">
+                    <i class="bi bi-layers"></i> {{ ano_anterior }}
+                </label>
+            </div>
+        </div>
+        <div class="card-body">
+            <canvas id="grafico-anual" style="max-height: 400px; width: 100%;"></canvas>
+        </div>
+    </div>
+
+    <!-- Cards Comparativos por Ano -->
+    <div class="row g-3 mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-bar-chart"></i> Comparativo {{ ano }} vs {{ ano_anterior }}</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Mês</th>
+                                    <th class="text-end text-success">Receitas {{ ano }}</th>
+                                    <th class="text-end text-muted">Receitas {{ ano_anterior }}</th>
+                                    <th class="text-end text-danger">Despesas {{ ano }}</th>
+                                    <th class="text-end text-muted">Despesas {{ ano_anterior }}</th>
+                                    <th class="text-end text-primary">Lucro {{ ano }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for i in range(12) %}
+                                <tr>
+                                    <td><strong>{{ dados_mensais.meses[i] }}</strong></td>
+                                    <td class="text-end text-success">R$ {{ "%.2f"|format(dados_mensais.receitas[i]) }}
+                                    </td>
+                                    <td class="text-end text-muted">R$ {{
+                                        "%.2f"|format(dados_mensais_anterior.receitas[i]) }}</td>
+                                    <td class="text-end text-danger">R$ {{ "%.2f"|format(dados_mensais.despesas[i]) }}
+                                    </td>
+                                    <td class="text-end text-muted">R$ {{
+                                        "%.2f"|format(dados_mensais_anterior.despesas[i]) }}</td>
+                                    <td
+                                        class="text-end {% if dados_mensais.receitas[i] - dados_mensais.despesas[i] >= 0 %}text-primary{% else %}text-warning{% endif %}">
+                                        R$ {{ "%.2f"|format(dados_mensais.receitas[i] - dados_mensais.despesas[i]) }}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot class="table-dark">
+                                <tr>
+                                    <th>TOTAL</th>
+                                    <th class="text-end">R$ {{ "%.2f"|format(receitas) }}</th>
+                                    <th class="text-end">R$ {{ "%.2f"|format(receitas_anterior) }}</th>
+                                    <th class="text-end">R$ {{ "%.2f"|format(despesas) }}</th>
+                                    <th class="text-end">R$ {{ "%.2f"|format(despesas_anterior) }}</th>
+                                    <th class="text-end">R$ {{ "%.2f"|format(lucro) }}</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Link para voltar ao Dashboard -->
+    <div class="text-center mt-4">
+        <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Voltar ao Dashboard Mensal
+        </a>
+    </div>
+</div>
+
+<!-- Dados para o JavaScript -->
+<script>
+    const DADOS_ANUAIS = {
+        ano: {{ ano }},
+    anoAnterior: { { ano_anterior } },
+    meses: { { dados_mensais.meses | tojson } },
+    receitas: { { dados_mensais.receitas | tojson } },
+    despesas: { { dados_mensais.despesas | tojson } },
+    receitasAnterior: { { dados_mensais_anterior.receitas | tojson } },
+    despesasAnterior: { { dados_mensais_anterior.despesas | tojson } }
+    };
+</script>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/analise_anual.js') }}"></script>
+{% endblock %}

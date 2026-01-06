@@ -63,9 +63,8 @@
                 <li class="nav-divider" aria-hidden="true"></li>
 
                 <li class="nav-item">
-                    <a href="{{ url_for('main.dashboard', mes=0, ano=ano_atual) }}"
-                        class="nav-link {% if mes_atual == 0 %}active{% endif %}" data-mes="0"
-                        data-ano="{{ ano_atual }}">
+                    <a href="{{ url_for('main.analise_anual', ano=ano_atual) }}"
+                        class="nav-link {% if request.endpoint == 'main.analise_anual' %}active{% endif %}">
                         <i class="nav-icon bi bi-graph-up-arrow"></i>
                         <span class="nav-text">Análise Anual</span>
                     </a>

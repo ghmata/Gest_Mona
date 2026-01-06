@@ -417,3 +417,95 @@ def get_totais_diarios_mes(ano: int, mes: int) -> dict:
     except Exception as e:
         logger.error(f"Erro ao calcular totais diários: {e}")
         return {'dias': [], 'receitas': [], 'despesas': []}
+
+
+def get_totais_ano(ano: int) -> dict:
+    """
+    Calcula os totais financeiros de um ano inteiro.
+    
+    Args:
+        ano: Ano desejado (ex: 2024)
+    
+    Returns:
+        dict: Dicionário com as chaves:
+            - receitas: Soma de todas as receitas do ano
+            - despesas: Soma de todas as despesas do ano
+            - lucro: Diferença entre receitas e despesas
+    """
+    try:
+        inicio_ano = datetime(ano, 1, 1)
+        fim_ano = datetime(ano, 12, 31, 23, 59, 59)
+        
+        transacoes = Transacao.query.filter(
+            Transacao.data >= inicio_ano,
+            Transacao.data <= fim_ano,
+            Transacao.status == 'CONFIRMADO'
+        ).all()
+        
+        receitas = sum(t.valor for t in transacoes if t.tipo == 'RECEITA')
+        despesas = sum(t.valor for t in transacoes if t.tipo == 'DESPESA')
+        
+        resultado = {
+            'receitas': receitas,
+            'despesas': despesas,
+            'lucro': receitas - despesas
+        }
+        
+        logger.info(f"Totais anuais {ano}: R={receitas:.2f}, D={despesas:.2f}")
+        return resultado
+        
+    except Exception as e:
+        logger.error(f"Erro ao calcular totais anuais {ano}: {e}")
+        return {'receitas': 0.0, 'despesas': 0.0, 'lucro': 0.0}
+
+
+def get_totais_mensais_ano(ano: int) -> dict:
+    """
+    Calcula totais mensais para gráfico de evolução anual (Meses x Valores).
+    
+    Args:
+        ano: Ano desejado
+    
+    Returns:
+        dict: {
+            'meses': ['Jan', 'Fev', ...],
+            'receitas': [0.0, ...],
+            'despesas': [0.0, ...]
+        }
+    """
+    try:
+        meses_nomes = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
+                       'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
+        
+        receitas_mes = [0.0] * 12
+        despesas_mes = [0.0] * 12
+        
+        # Busca todas as transações do ano
+        inicio_ano = datetime(ano, 1, 1)
+        fim_ano = datetime(ano, 12, 31, 23, 59, 59)
+        
+        transacoes = Transacao.query.filter(
+            Transacao.data >= inicio_ano,
+            Transacao.data <= fim_ano,
+            Transacao.status == 'CONFIRMADO'
+        ).all()
+        
+        for t in transacoes:
+            mes_idx = t.data.month - 1  # 0-indexed
+            if t.tipo == 'RECEITA':
+                receitas_mes[mes_idx] += t.valor
+            elif t.tipo == 'DESPESA':
+                despesas_mes[mes_idx] += t.valor
+        
+        resultado = {
+            'meses': meses_nomes,
+            'receitas': receitas_mes,
+            'despesas': despesas_mes
+        }
+        
+        logger.info(f"Dados mensais processados para {ano}")
+        return resultado
+        
+    except Exception as e:
+        logger.error(f"Erro ao calcular totais mensais do ano {ano}: {e}")
+        return {'meses': [], 'receitas': [], 'despesas': []}
