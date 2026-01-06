@@ -94,6 +94,8 @@ class Config:
             'Frutas',             # Frutas diversas
             'Alimento (Variado)', # Alimentos diversos não classificados
             'Gelo',               # Gelo para bebidas e conservação
+            'Café',               # Café em grão, moído, cápsulas
+            'Farinha',            # Farinha de trigo, tapioca, etc
             'Outros'
         ],
         'Bebidas': [

@@ -56,6 +56,8 @@
     --cat-gorjeta: #4dd0e1;
     --cat-venda-ferias: #4db6ac;
     --cat-caixa: #78909c;
+    --cat-cafe: #6F4E37;
+    --cat-farinha: #F5DEB3;
 
     /* Cores de categorias principais */
     --cat-insumos: #28a745;
@@ -1036,6 +1038,17 @@ textarea.form-control {
 .badge-Gelo,
 .badge-dot.badge-Gelo {
     background-color: var(--cat-gelo) !important;
+}
+
+.badge-Café,
+.badge-dot.badge-Café {
+    background-color: var(--cat-cafe) !important;
+}
+
+.badge-Farinha,
+.badge-dot.badge-Farinha {
+    background-color: var(--cat-farinha) !important;
+    color: #000 !important;
 }
 
 .badge-Energético,

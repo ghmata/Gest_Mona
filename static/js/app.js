@@ -49,6 +49,8 @@ document.addEventListener('DOMContentLoaded', function () {
             { value: 'Frutas', label: '🍎 Frutas' },
             { value: 'Alimento (Variado)', label: '🥘 Alimento (Variado)' },
             { value: 'Gelo', label: '🧊 Gelo' },
+            { value: 'Café', label: '☕ Café' },
+            { value: 'Farinha', label: '🌾 Farinha' },
             { value: 'Outros', label: '📋 Outros' }
         ],
         'Bebidas': [
@@ -137,6 +139,8 @@ document.addEventListener('DOMContentLoaded', function () {
         { regex: /latic[ií]nio|queijo|leite|manteiga/i, categoria: 'Insumos', subcategoria: 'Laticínios' },
         { regex: /fruta|banana|laranja|lim[aã]o|abacaxi/i, categoria: 'Insumos', subcategoria: 'Frutas' },
         { regex: /gelo|gelada|freezer/i, categoria: 'Insumos', subcategoria: 'Gelo' },
+        { regex: /caf[eé]|coffee|expresso|cappuccino/i, categoria: 'Insumos', subcategoria: 'Café' },
+        { regex: /farinha|trigo|tapioca|polvilho|amido/i, categoria: 'Insumos', subcategoria: 'Farinha' },
 
         // Bebidas
         { regex: /cerveja|budweiser|heineken|stella|corona|brahma|skol/i, categoria: 'Bebidas', subcategoria: 'Cervejas' },

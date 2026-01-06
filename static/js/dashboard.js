@@ -46,6 +46,8 @@ const CORES_SUBCATEGORIAS = {
     'Frutas': '#FF6B81',             // Rosa coral
     'Alimento (Variado)': '#A55EEA', // Roxo vibrante
     'Gelo': '#70A1FF',               // Azul gelo
+    'Café': '#6F4E37',               // Marrom café
+    'Farinha': '#F5DEB3',            // Bege trigo
 
     // Bebidas - tons quentes e frios alternados
     'Bebidas': '#FFD93D',            // Amarelo dourado
