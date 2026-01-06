@@ -337,13 +337,17 @@
                 </div>
 
                 <div class="row g-2 mt-1">
-                    <!-- Data início/fim -->
-                    <div class="col-6 col-md-3">
-                        <input type="date" class="form-control form-control-sm" name="data_inicio"
+                    <!-- Data de Início -->
+                    <div class="col-md-2">
+                        <label for="data_inicio" class="form-label small">Data Início</label>
+                        <input type="date" class="form-control form-control-sm" id="data_inicio" name="data_inicio"
                             value="{{ busca_data_inicio or '' }}">
                     </div>
-                    <div class="col-6 col-md-3">
-                        <input type="date" class="form-control form-control-sm" name="data_fim"
+
+                    <!-- Data de Fim -->
+                    <div class="col-md-2">
+                        <label for="data_fim" class="form-label small">Data Fim</label>
+                        <input type="date" class="form-control form-control-sm" id="data_fim" name="data_fim"
                             value="{{ busca_data_fim or '' }}">
                     </div>
                     <!-- Botões -->
