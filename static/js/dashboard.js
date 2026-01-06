@@ -79,6 +79,7 @@ const CORES_SUBCATEGORIAS = {
     // Infraestrutura - tons terrosos
     'Aluguel': '#D35400',            // Laranja queimado
     'Energia': '#F1C40F',            // Amarelo elétrico
+    'Água': '#2196F3',               // Azul água
     'Seguros': '#16A085',            // Verde petróleo (corrigido)
 
     // Administrativo - tons de cinza e azul
