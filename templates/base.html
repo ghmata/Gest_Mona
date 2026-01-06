@@ -124,6 +124,14 @@
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 
     {% block scripts %}{% endblock %}
+
+    <!-- Loading Overlay Global -->
+    <div id="loading-overlay" class="loading-overlay" aria-hidden="true">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <p class="loading-text" id="loading-text">Carregando...</p>
+        </div>
+    </div>
 </body>
 
 </html>

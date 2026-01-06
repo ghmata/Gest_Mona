@@ -37,6 +37,81 @@ function csrfFetch(url, options = {}) {
     return fetch(url, options);
 }
 
+// =========================================
+// Loading States - Funções Globais
+// =========================================
+
+/**
+ * Mostra o overlay de loading global
+ * @param {string} message - Mensagem a ser exibida (opcional)
+ */
+function showLoading(message = 'Carregando...') {
+    const overlay = document.getElementById('loading-overlay');
+    const textEl = document.getElementById('loading-text');
+
+    if (overlay) {
+        if (textEl) textEl.textContent = message;
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden', 'false');
+    }
+}
+
+/**
+ * Esconde o overlay de loading global
+ */
+function hideLoading() {
+    const overlay = document.getElementById('loading-overlay');
+
+    if (overlay) {
+        overlay.classList.remove('active');
+        overlay.setAttribute('aria-hidden', 'true');
+    }
+}
+
+/**
+ * Coloca um botão em estado de loading
+ * @param {HTMLElement} button - Elemento do botão
+ * @param {boolean} loading - Se está carregando
+ * @param {string} originalText - Texto original do botão (para restaurar)
+ */
+function setButtonLoading(button, loading, originalText = null) {
+    if (!button) return;
+
+    if (loading) {
+        // Salva o texto original se não foi passado
+        if (!originalText) {
+            button.dataset.originalText = button.innerHTML;
+        }
+        button.classList.add('btn-loading');
+        button.disabled = true;
+    } else {
+        button.classList.remove('btn-loading');
+        button.disabled = false;
+        // Restaura o texto original
+        if (button.dataset.originalText) {
+            button.innerHTML = button.dataset.originalText;
+            delete button.dataset.originalText;
+        }
+    }
+}
+
+/**
+ * Mostra animação de sucesso inline
+ * @param {HTMLElement} container - Elemento onde mostrar a animação
+ */
+function showSuccessAnimation(container) {
+    if (!container) return;
+
+    const checkmark = document.createElement('span');
+    checkmark.className = 'success-checkmark ms-2';
+    container.appendChild(checkmark);
+
+    // Remove após 2 segundos
+    setTimeout(() => {
+        checkmark.remove();
+    }, 2000);
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     // =========================================
     // Elementos da página Home
