@@ -76,10 +76,12 @@ def create_app(config_override: dict = None) -> Flask:
         return User.query.get(int(user_id))
     
     # Inicializar CORS
+    # Origins configuráveis via Config.CORS_ORIGINS (env var CORS_ORIGINS)
+    cors_origins = Config.CORS_ORIGINS
     CORS(app, resources={
-        r"/api/*": {"origins": "*"},
-        r"/upload-*": {"origins": "*"},
-        r"/transacao*": {"origins": "*"}
+        r"/api/*": {"origins": cors_origins},
+        r"/upload-*": {"origins": cors_origins},
+        r"/transacao*": {"origins": cors_origins}
     })
     
     # Headers de segurança

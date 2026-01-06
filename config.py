@@ -83,6 +83,12 @@ class Config:
     # Mensagem exibida quando usuário tenta acessar rota protegida
     LOGIN_MESSAGE: str = 'Por favor, faça login para acessar esta página.'
     
+    # Configurações de CORS
+    # Em produção, defina domínios específicos separados por vírgula via .env
+    # Exemplo: CORS_ORIGINS=https://mona.com.br,https://app.mona.com.br
+    # Em desenvolvimento, use "*" para permitir qualquer origem
+    CORS_ORIGINS: list = os.getenv('CORS_ORIGINS', '*').split(',') if os.getenv('CORS_ORIGINS') else ['*']
+    
     # Categorias de despesas para MONA Beach Club Joaquina
     # Estrutura hierárquica: Categoria Principal → Subcategorias
     CATEGORIAS_SUBCATEGORIAS: dict = {
