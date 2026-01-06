@@ -15,6 +15,8 @@ from flask import Flask, request, render_template, jsonify
 from flask_cors import CORS
 from flask_login import LoginManager
 from flask_wtf.csrf import CSRFProtect
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 # 3. Imports locais
 from config import Config
@@ -59,6 +61,19 @@ def create_app(config_override: dict = None) -> Flask:
     
     # Inicializar proteção CSRF
     csrf = CSRFProtect(app)
+    
+    # Inicializar Rate Limiter
+    # Armazenamento em memória (para produção com múltiplas instâncias, usar Redis)
+    limiter = Limiter(
+        key_func=get_remote_address,
+        app=app,
+        default_limits=["200 per day", "50 per hour"],
+        storage_uri="memory://",
+        headers_enabled=True  # Adiciona headers X-RateLimit-*
+    )
+    
+    # Expor limiter para uso nos blueprints
+    app.limiter = limiter
     
     # Inicializar Flask-Login
     login_manager = LoginManager()

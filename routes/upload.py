@@ -13,7 +13,7 @@ import logging
 from datetime import datetime
 from pathlib import Path
 
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 
 from config import Config
 from services.groq_service import get_groq_service
@@ -43,6 +43,10 @@ def upload_nota():
         {"sucesso": true, "dados": {...}, "comprovante_url": "..."}
     """
     try:
+        # Rate limit: 30 uploads por minuto por IP
+        limiter = current_app.limiter
+        limiter.limit("30 per minute")(lambda: None)()
+        
         data = request.get_json()
         if not data:
             return jsonify({
@@ -135,6 +139,10 @@ def upload_notas_massa():
         {"arquivos": [{"imagem": "...", "nome_arquivo": "..."}, ...]}
     """
     try:
+        # Rate limit: 5 uploads em massa por minuto por IP
+        limiter = current_app.limiter
+        limiter.limit("5 per minute")(lambda: None)()
+        
         data = request.get_json()
         if not data:
             return jsonify({
@@ -265,6 +273,10 @@ def upload_comprovante():
         {"arquivo": "data:image/jpeg;base64,..."}
     """
     try:
+        # Rate limit: 30 uploads por minuto por IP
+        limiter = current_app.limiter
+        limiter.limit("30 per minute")(lambda: None)()
+        
         data = request.get_json()
         if not data or not data.get('arquivo'):
             return jsonify({

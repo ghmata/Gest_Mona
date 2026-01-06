@@ -10,7 +10,7 @@ import logging
 from datetime import datetime
 from functools import wraps
 
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
 from flask_login import login_user, logout_user, login_required, current_user
 
 from config import Config
@@ -21,9 +21,18 @@ logger = logging.getLogger(__name__)
 bp = Blueprint('auth', __name__)
 
 
+def get_limiter():
+    """Obtém o limiter da aplicação atual."""
+    return current_app.limiter
+
+
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
     """Exibe formulário de login e processa autenticação."""
+    # Aplicar rate limit manualmente (10 tentativas por minuto por IP)
+    limiter = get_limiter()
+    limiter.limit("10 per minute")(lambda: None)()
+    
     # Se já está logado, redireciona para home
     if current_user.is_authenticated:
         return redirect(url_for('main.home'))
