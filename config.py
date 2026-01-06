@@ -137,7 +137,8 @@ class Config:
         ],
         'Infraestrutura': [
             'Aluguel',            # Aluguel de imóvel, equipamentos
-            'Energia',            # Conta de luz, água, gás encanado
+            'Energia',            # Conta de luz, gás encanado
+            'Água',               # Conta de água
             'Seguros',            # Seguros em geral
             'Outros'
         ],

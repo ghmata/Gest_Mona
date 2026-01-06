@@ -79,6 +79,9 @@
     --cat-software: #42A5F5;
     --cat-maquinas: #78909C;
 
+    /* Subcategorias Infraestrutura */
+    --cat-agua: #2196F3;
+
     /* Espaçamento */
     --spacing-xs: 0.25rem;
     --spacing-sm: 0.5rem;
@@ -838,12 +841,21 @@ textarea.form-control {
 }
 
 @keyframes spin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 @keyframes loadingPulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.02); }
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.02);
+    }
 }
 
 /* Botão com estado de loading */
@@ -897,10 +909,10 @@ textarea.form-control {
 
 /* Skeleton Loading */
 .skeleton {
-    background: linear-gradient(90deg, 
-        var(--mona-neutral-100, #e9ecef) 25%, 
-        var(--mona-neutral-50, #f8f9fa) 50%, 
-        var(--mona-neutral-100, #e9ecef) 75%);
+    background: linear-gradient(90deg,
+            var(--mona-neutral-100, #e9ecef) 25%,
+            var(--mona-neutral-50, #f8f9fa) 50%,
+            var(--mona-neutral-100, #e9ecef) 75%);
     background-size: 200% 100%;
     animation: skeletonWave 1.5s ease infinite;
     border-radius: var(--radius-sm);
@@ -921,8 +933,13 @@ textarea.form-control {
 }
 
 @keyframes skeletonWave {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
 }
 
 /* Animação de sucesso */
@@ -946,9 +963,19 @@ textarea.form-control {
 }
 
 @keyframes successPop {
-    0% { transform: scale(0); opacity: 0; }
-    50% { transform: scale(1.2); }
-    100% { transform: scale(1); opacity: 1; }
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+
+    50% {
+        transform: scale(1.2);
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
 }
 
 /* Dark mode adjustments */
@@ -961,10 +988,10 @@ textarea.form-control {
 }
 
 [data-theme="dark"] .skeleton {
-    background: linear-gradient(90deg, 
-        rgba(255,255,255,0.1) 25%, 
-        rgba(255,255,255,0.15) 50%, 
-        rgba(255,255,255,0.1) 75%);
+    background: linear-gradient(90deg,
+            rgba(255, 255, 255, 0.1) 25%,
+            rgba(255, 255, 255, 0.15) 50%,
+            rgba(255, 255, 255, 0.1) 75%);
     background-size: 200% 100%;
 }
 
@@ -1193,6 +1220,11 @@ textarea.form-control {
 .badge-Seguro,
 .badge-dot.badge-Seguro {
     background-color: var(--cat-seguro) !important;
+}
+
+.badge-Água,
+.badge-dot.badge-Água {
+    background-color: var(--cat-agua) !important;
 }
 
 /* Subcategorias Aquisições */

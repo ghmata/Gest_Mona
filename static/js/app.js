@@ -195,6 +195,7 @@ document.addEventListener('DOMContentLoaded', function () {
         'Infraestrutura': [
             { value: 'Aluguel', label: '🏠 Aluguel' },
             { value: 'Energia', label: '💡 Energia' },
+            { value: 'Água', label: '💧 Água' },
             { value: 'Seguros', label: '🛡️ Seguros' },
             { value: 'Outros', label: '📋 Outros' }
         ],
@@ -276,8 +277,9 @@ document.addEventListener('DOMContentLoaded', function () {
         { regex: /hora\s*extra|he\b|horas?\s*extras?/i, categoria: 'Pessoal', subcategoria: 'Hora Extra' },
 
         // Infraestrutura
-        { regex: /aluguel|rent|loca[cç][aã]o/i, categoria: 'Infraestrutura', subcategoria: 'Aluguel' },
+        { regex: /aluguel|rent|locação/i, categoria: 'Infraestrutura', subcategoria: 'Aluguel' },
         { regex: /energia|luz|eletric|celesc|copel/i, categoria: 'Infraestrutura', subcategoria: 'Energia' },
+        { regex: /água|aguá|casan|samae|saneamento|cedae/i, categoria: 'Infraestrutura', subcategoria: 'Água' },
         { regex: /seguro|seguradora|porto|mapfre/i, categoria: 'Infraestrutura', subcategoria: 'Seguros' },
 
         // Administrativo
