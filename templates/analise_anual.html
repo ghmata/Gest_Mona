@@ -103,6 +103,41 @@
         </div>
     </div>
 
+    <!-- Ranking de Categorias (Módulo F4) -->
+    <div class="row g-3 mb-4">
+        <!-- Top 5 Despesas -->
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h6 class="mb-0 text-danger"><i class="bi bi-bar-chart-fill"></i> Top 5 Despesas - {{ ano }}</h6>
+                </div>
+                <div class="card-body">
+                    {% if ranking_despesas %}
+                    <canvas id="grafico-ranking-despesas" style="max-height: 250px;"></canvas>
+                    {% else %}
+                    <p class="text-muted text-center py-4">Sem despesas registradas em {{ ano }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Top 5 Receitas -->
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h6 class="mb-0 text-success"><i class="bi bi-bar-chart-fill"></i> Top 5 Receitas - {{ ano }}</h6>
+                </div>
+                <div class="card-body">
+                    {% if ranking_receitas %}
+                    <canvas id="grafico-ranking-receitas" style="max-height: 250px;"></canvas>
+                    {% else %}
+                    <p class="text-muted text-center py-4">Sem receitas registradas em {{ ano }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Cards Comparativos por Ano -->
     <div class="row g-3 mb-4">
         <div class="col-12">
@@ -176,7 +211,9 @@
     receitas: { { dados_mensais.receitas | tojson } },
     despesas: { { dados_mensais.despesas | tojson } },
     receitasAnterior: { { dados_mensais_anterior.receitas | tojson } },
-    despesasAnterior: { { dados_mensais_anterior.despesas | tojson } }
+    despesasAnterior: { { dados_mensais_anterior.despesas | tojson } },
+    rankingDespesas: { { ranking_despesas | tojson } },
+    rankingReceitas: { { ranking_receitas | tojson } }
     };
 </script>
 {% endblock %}

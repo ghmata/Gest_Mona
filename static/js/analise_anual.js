@@ -170,6 +170,132 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     };
 
-    // Inicializa
+    /**
+     * Renderiza gráfico de barras horizontais para Top 5 Despesas
+     */
+    const renderizarRankingDespesas = () => {
+        const canvas = document.getElementById('grafico-ranking-despesas');
+        if (!canvas || !DADOS_ANUAIS.rankingDespesas || DADOS_ANUAIS.rankingDespesas.length === 0) return;
+
+        const ctx = canvas.getContext('2d');
+        const labels = DADOS_ANUAIS.rankingDespesas.map(item => item.categoria);
+        const valores = DADOS_ANUAIS.rankingDespesas.map(item => item.valor);
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Despesas',
+                    data: valores,
+                    backgroundColor: [
+                        'rgba(220, 53, 69, 0.8)',
+                        'rgba(220, 53, 69, 0.65)',
+                        'rgba(220, 53, 69, 0.5)',
+                        'rgba(220, 53, 69, 0.35)',
+                        'rgba(220, 53, 69, 0.2)'
+                    ],
+                    borderColor: '#dc3545',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                return new Intl.NumberFormat('pt-BR', {
+                                    style: 'currency',
+                                    currency: 'BRL'
+                                }).format(context.parsed.x);
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function (value) {
+                                return 'R$ ' + (value / 1000).toFixed(0) + 'k';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    };
+
+    /**
+     * Renderiza gráfico de barras horizontais para Top 5 Receitas
+     */
+    const renderizarRankingReceitas = () => {
+        const canvas = document.getElementById('grafico-ranking-receitas');
+        if (!canvas || !DADOS_ANUAIS.rankingReceitas || DADOS_ANUAIS.rankingReceitas.length === 0) return;
+
+        const ctx = canvas.getContext('2d');
+        const labels = DADOS_ANUAIS.rankingReceitas.map(item => item.categoria);
+        const valores = DADOS_ANUAIS.rankingReceitas.map(item => item.valor);
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Receitas',
+                    data: valores,
+                    backgroundColor: [
+                        'rgba(25, 135, 84, 0.8)',
+                        'rgba(25, 135, 84, 0.65)',
+                        'rgba(25, 135, 84, 0.5)',
+                        'rgba(25, 135, 84, 0.35)',
+                        'rgba(25, 135, 84, 0.2)'
+                    ],
+                    borderColor: '#198754',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                return new Intl.NumberFormat('pt-BR', {
+                                    style: 'currency',
+                                    currency: 'BRL'
+                                }).format(context.parsed.x);
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function (value) {
+                                return 'R$ ' + (value / 1000).toFixed(0) + 'k';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    };
+
+    // Inicializa todos os gráficos
     inicializarGrafico();
+    renderizarRankingDespesas();
+    renderizarRankingReceitas();
 });

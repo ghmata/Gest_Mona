@@ -509,3 +509,89 @@ def get_totais_mensais_ano(ano: int) -> dict:
     except Exception as e:
         logger.error(f"Erro ao calcular totais mensais do ano {ano}: {e}")
         return {'meses': [], 'receitas': [], 'despesas': []}
+
+
+def get_ranking_categorias_ano(ano: int, limite: int = 5) -> list:
+    """
+    Retorna Top N categorias de despesas do ano, ordenadas por valor.
+    
+    Args:
+        ano: Ano desejado
+        limite: Quantidade de categorias no ranking (default: 5)
+    
+    Returns:
+        list: Lista de dicts [{'categoria': 'Insumos', 'valor': 15000.0}, ...]
+    """
+    try:
+        inicio_ano = datetime(ano, 1, 1)
+        fim_ano = datetime(ano, 12, 31, 23, 59, 59)
+        
+        transacoes = Transacao.query.filter(
+            Transacao.data >= inicio_ano,
+            Transacao.data <= fim_ano,
+            Transacao.tipo == 'DESPESA',
+            Transacao.status == 'CONFIRMADO'
+        ).all()
+        
+        # Agrupa por categoria
+        totais = {}
+        for t in transacoes:
+            cat = t.categoria or 'Outros'
+            totais[cat] = totais.get(cat, 0) + t.valor
+        
+        # Ordena por valor decrescente e limita
+        ranking = sorted(
+            [{'categoria': k, 'valor': v} for k, v in totais.items()],
+            key=lambda x: x['valor'],
+            reverse=True
+        )[:limite]
+        
+        logger.info(f"Ranking de categorias {ano}: {len(ranking)} itens")
+        return ranking
+        
+    except Exception as e:
+        logger.error(f"Erro ao calcular ranking de categorias {ano}: {e}")
+        return []
+
+
+def get_ranking_receitas_ano(ano: int, limite: int = 5) -> list:
+    """
+    Retorna Top N tipos de receita do ano, ordenados por valor.
+    
+    Args:
+        ano: Ano desejado
+        limite: Quantidade de itens no ranking (default: 5)
+    
+    Returns:
+        list: Lista de dicts [{'categoria': 'PIX', 'valor': 50000.0}, ...]
+    """
+    try:
+        inicio_ano = datetime(ano, 1, 1)
+        fim_ano = datetime(ano, 12, 31, 23, 59, 59)
+        
+        transacoes = Transacao.query.filter(
+            Transacao.data >= inicio_ano,
+            Transacao.data <= fim_ano,
+            Transacao.tipo == 'RECEITA',
+            Transacao.status == 'CONFIRMADO'
+        ).all()
+        
+        # Agrupa por categoria (tipo de receita)
+        totais = {}
+        for t in transacoes:
+            cat = t.categoria or 'Outros'
+            totais[cat] = totais.get(cat, 0) + t.valor
+        
+        # Ordena por valor decrescente e limita
+        ranking = sorted(
+            [{'categoria': k, 'valor': v} for k, v in totais.items()],
+            key=lambda x: x['valor'],
+            reverse=True
+        )[:limite]
+        
+        logger.info(f"Ranking de receitas {ano}: {len(ranking)} itens")
+        return ranking
+        
+    except Exception as e:
+        logger.error(f"Erro ao calcular ranking de receitas {ano}: {e}")
+        return []
