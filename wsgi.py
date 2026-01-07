@@ -42,8 +42,6 @@ if os.path.exists(env_path):
     print(f"[WSGI] .env carregado de: {env_path}")
 else:
     print(f"[WSGI] AVISO: .env não encontrado - usando valores padrao")
-else:
-    print(f"[WSGI] AVISO: .env não encontrado em: {env_path}")
 
 # Debug: verifica se GROQ_API_KEY foi carregada
 groq_key = os.environ.get('GROQ_API_KEY', '')
