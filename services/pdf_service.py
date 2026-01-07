@@ -78,20 +78,20 @@ def gerar_grafico_rosca(gastos_categoria):
     # Cria figura
     fig, ax = plt.subplots(figsize=(4, 4), facecolor='white')
     
-    #Gráfico rosca (donut)
+    # Gráfico rosca (donut) com números FORA
     wedges, texts, autotexts = ax.pie(
         valores,
-        labels=None,  # Remove labels do gráfico
+        labels=None,
         autopct='%1.1f%%',
         startangle=90,
         colors=cores[:len(categorias)],
-        pctdistance=0.85,
-        wedgeprops=dict(width=0.5, edgecolor='white')  # Define largura da rosca
+        pctdistance=1.2,  # Porcentagens FORA da rosca
+        wedgeprops=dict(width=0.5, edgecolor='white')
     )
     
-    # Estilo dos textos de porcentagem
+    # Estilo dos textos de porcentagem - PRETO
     for autotext in autotexts:
-        autotext.set_color('white')
+        autotext.set_color('black')  # COR PRETA
         autotext.set_fontsize(8)
         autotext.set_weight('bold')
     
@@ -170,8 +170,8 @@ def gerar_relatorio_mensal(mes, ano, totais, gastos_categoria, receitas_categori
             if grafico_path:
                 # Salva posição atual
                 y_inicial = pdf.get_y()
-                # Insere gráfico no lado direito
-                pdf.image(grafico_path, x=140, y=y_inicial, w=60)
+                # Insere gráfico mais à ESQUERDA (120) e mais ACIMA (-5)
+                pdf.image(grafico_path, x=120, y=y_inicial - 5, w=60)
         except Exception as e:
             logger.error(f"Erro ao gerar gráfico: {e}")
     
