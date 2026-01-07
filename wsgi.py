@@ -25,7 +25,35 @@ if project_home not in sys.path:
 if os.path.isdir(project_home):
     os.chdir(project_home)
 
-# Importa a aplicação Flask
+# ============================================
+# IMPORTANTE: Carregar .env ANTES de importar app
+# Isso garante que GROQ_API_KEY esteja disponível
+# quando config.py e groq_service.py forem carregados
+# ============================================
+
+# Define API Key diretamente (fallback caso .env não funcione)
+os.environ.setdefault('GROQ_API_KEY', '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')
+os.environ.setdefault('SECRET_KEY', 'ILSHCFSDCSMNT310820010103201928062025')
+
+from dotenv import load_dotenv
+env_path = os.path.join(project_home, '.env')
+if os.path.exists(env_path):
+    load_dotenv(env_path)
+    print(f"[WSGI] .env carregado de: {env_path}")
+else:
+    print(f"[WSGI] AVISO: .env não encontrado - usando valores padrao")
+else:
+    print(f"[WSGI] AVISO: .env não encontrado em: {env_path}")
+
+# Debug: verifica se GROQ_API_KEY foi carregada
+groq_key = os.environ.get('GROQ_API_KEY', '')
+if groq_key:
+    masked = f"{groq_key[:4]}...{groq_key[-4:]}" if len(groq_key) > 8 else "***"
+    print(f"[WSGI] GROQ_API_KEY detectada: {masked}")
+else:
+    print("[WSGI] AVISO: GROQ_API_KEY não encontrada no ambiente!")
+
+# Importa a aplicação Flask (DEPOIS de carregar o .env)
 from app import app as application
 
 
