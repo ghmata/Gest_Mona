@@ -339,13 +339,14 @@
                 <div class="row g-2 mt-1">
                     <!-- Data início/fim -->
                     <div class="col-6 col-md-3">
+                        <small class="text-muted d-block mb-1" style="font-size: 0.7rem;">📅 Período - Início</small>
                         <input type="date" class="form-control form-control-sm" id="data_inicio" name="data_inicio"
-                            placeholder="Data Início" title="Data de início do período"
                             value="{{ busca_data_inicio or '' }}">
                     </div>
                     <div class="col-6 col-md-3">
+                        <small class="text-muted d-block mb-1" style="font-size: 0.7rem;">📅 Período - Fim</small>
                         <input type="date" class="form-control form-control-sm" id="data_fim" name="data_fim"
-                            placeholder="Data Fim" title="Data de fim do período" value="{{ busca_data_fim or '' }}">
+                            value="{{ busca_data_fim or '' }}">
                     </div>
                     <!-- Botões -->
                     <div class="col-12 col-md-6 d-flex gap-2">
