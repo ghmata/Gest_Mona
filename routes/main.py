@@ -120,14 +120,20 @@ def dashboard():
         if busca_data_inicio:
             try:
                 data_inicio = datetime.strptime(busca_data_inicio, '%Y-%m-%d').date()
-                transacoes_filtradas = [t for t in transacoes_filtradas if t.data and t.data >= data_inicio]
+                transacoes_filtradas = [
+                    t for t in transacoes_filtradas 
+                    if t.data and (t.data.date() if hasattr(t.data, 'date') else t.data) >= data_inicio
+                ]
             except ValueError:
                 pass
         
         if busca_data_fim:
             try:
                 data_fim = datetime.strptime(busca_data_fim, '%Y-%m-%d').date()
-                transacoes_filtradas = [t for t in transacoes_filtradas if t.data and t.data <= data_fim]
+                transacoes_filtradas = [
+                    t for t in transacoes_filtradas 
+                    if t.data and (t.data.date() if hasattr(t.data, 'date') else t.data) <= data_fim
+                ]
             except ValueError:
                 pass
         
