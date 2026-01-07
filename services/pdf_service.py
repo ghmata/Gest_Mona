@@ -170,8 +170,8 @@ def gerar_relatorio_mensal(mes, ano, totais, gastos_categoria, receitas_categori
             if grafico_path:
                 # Salva posição atual
                 y_inicial = pdf.get_y()
-                # Gráfico à esquerda (90mm) e acima (15mm)
-                pdf.image(grafico_path, x=90, y=y_inicial - 15, w=60)
+                # Gráfico posicionado: x=105mm, y=15mm acima
+                pdf.image(grafico_path, x=105, y=y_inicial - 15, w=60)
         except Exception as e:
             logger.error(f"Erro ao gerar gráfico: {e}")
     
