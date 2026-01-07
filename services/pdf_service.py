@@ -214,9 +214,10 @@ def gerar_relatorio_mensal(mes, ano, totais, gastos_categoria, receitas_categori
             
             # Dados da transacao
             data_fmt = t.data.strftime('%d/%m/%Y') if hasattr(t, 'data') and t.data else '-'
-            desc = remover_acentos(str(getattr(t, 'descricao', '') or getattr(t, 'estabelecimento', '') or '-'))[:22]
-            cat = remover_acentos(str(getattr(t, 'categoria', '-') or '-'))[:12]
-            subcat = remover_acentos(str(getattr(t, 'subcategoria', '-') or '-'))[:12]
+            desc = remover_acentos(str(getattr(t, 'descricao', '') or getattr(t, 'estabelecimento', '') or '-'))
+            cat = remover_acentos(str(getattr(t, 'categoria', '-') or '-'))
+            subcat = remover_acentos(str(getattr(t, 'subcategoria', '-') or '-'))
+            obs = remover_acentos(str(getattr(t, 'observacao', '') or ''))
             tipo = getattr(t, 'tipo', 'DESPESA')
             valor = float(getattr(t, 'valor', 0))
             
@@ -227,18 +228,32 @@ def gerar_relatorio_mensal(mes, ano, totais, gastos_categoria, receitas_categori
                 pdf.set_text_color(220, 53, 69)
                 tipo_txt = 'DES'
             
+            # Linha principal da transação
             pdf.cell(20, 7, data_fmt, border=1)
             pdf.cell(12, 7, tipo_txt, border=1)
             pdf.set_text_color(0, 0, 0)
-            pdf.cell(45, 7, desc, border=1)
-            pdf.cell(30, 7, cat, border=1)
-            pdf.cell(30, 7, subcat, border=1)
+            pdf.cell(45, 7, desc[:22], border=1)
+            pdf.cell(30, 7, cat[:12], border=1)
+            pdf.cell(30, 7, subcat[:12], border=1)
             if tipo == 'RECEITA':
                 pdf.set_text_color(40, 167, 69)
             else:
                 pdf.set_text_color(220, 53, 69)
             pdf.cell(0, 7, formatar_moeda(valor), border=1, ln=True)
             pdf.set_text_color(0, 0, 0)
+            
+            # Se houver observação, adiciona em linha extra com multi_cell
+            if obs and len(obs) > 0:
+                pdf.set_font('Helvetica', 'I', 7)
+                pdf.set_text_color(100, 100, 100)
+                # Cell vazia para alinhar com descrição
+                pdf.cell(32, 0, '', border=0)
+                # Multi_cell para quebra automática de texto
+                x_before = pdf.get_x()
+                y_before = pdf.get_y()
+                pdf.multi_cell(0, 4, 'Obs: ' + obs, border=0)
+                pdf.set_font('Helvetica', '', 8)
+                pdf.set_text_color(0, 0, 0)
         
         pdf.ln(3)
         pdf.set_font('Helvetica', 'B', 10)
