@@ -832,7 +832,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                     <input type="date" class="form-control form-control-sm" 
                                         name="data_${index}" value="${dados.data || new Date().toISOString().split('T')[0]}">
                                 </div>
-                                <div class="col-6 col-xl-1">
+                                <div class="col-6 col-xl-2">
                                     <input type="number" step="0.01" class="form-control form-control-sm" 
                                         name="valor_${index}" value="${dados.valor_total?.toFixed(2) || '0.00'}" placeholder="Valor">
                                 </div>
