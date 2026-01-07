@@ -201,8 +201,10 @@ def dashboard():
         return render_template('dashboard.html', **dados)
         
     except Exception as e:
+        import traceback
         logger.error(f"Erro ao carregar dashboard: {e}")
-        flash('Erro ao carregar o painel.', 'error')
+        logger.error(f"Traceback: {traceback.format_exc()}")
+        flash(f'Erro ao carregar o painel: {str(e)}', 'error')
         return redirect(url_for('main.home'))
 
 
