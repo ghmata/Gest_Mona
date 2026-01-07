@@ -9,6 +9,9 @@ from typing import List, Dict
 import logging
 import tempfile
 import os
+import matplotlib
+matplotlib.use('Agg')  # Backend sem GUI
+import matplotlib.pyplot as plt
 
 logger = logging.getLogger(__name__)
 
@@ -59,6 +62,59 @@ def formatar_moeda(valor):
         return "R$ 0,00"
 
 
+def gerar_grafico_rosca(gastos_categoria):
+    """Gera gráfico em rosca das categorias de despesas."""
+    if not gastos_categoria or len(gastos_categoria) == 0:
+        return None
+    
+    # Prepara dados
+    categorias = list(gastos_categoria.keys())
+    valores = list(gastos_categoria.values())
+    
+    # Cores personalizadas para categorias
+    cores = ['#28a745', '#17a2b8', '#8d6e63', '#455a64', '#651fff', 
+             '#00bcd4', '#ff5722', '#ffc107', '#9c27b0', '#607d8b']
+    
+    # Cria figura
+    fig, ax = plt.subplots(figsize=(4, 4), facecolor='white')
+    
+    #Gráfico rosca (donut)
+    wedges, texts, autotexts = ax.pie(
+        valores,
+        labels=None,  # Remove labels do gráfico
+        autopct='%1.1f%%',
+        startangle=90,
+        colors=cores[:len(categorias)],
+        pctdistance=0.85,
+        wedgeprops=dict(width=0.5, edgecolor='white')  # Define largura da rosca
+    )
+    
+    # Estilo dos textos de porcentagem
+    for autotext in autotexts:
+        autotext.set_color('white')
+        autotext.set_fontsize(8)
+        autotext.set_weight('bold')
+    
+    # Adiciona legenda compacta fora do gráfico
+    ax.legend(
+        categorias,
+        loc='center left',
+        bbox_to_anchor=(1, 0, 0.5, 1),
+        fontsize=7,
+        frameon=False
+    )
+    
+    ax.axis('equal')
+    plt.tight_layout()
+    
+    # Salva em arquivo temporário
+    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.png')
+    plt.savefig(temp_file.name, format='png', dpi=150, bbox_inches='tight', facecolor='white')
+    plt.close()
+    
+    return temp_file.name
+
+
 class RelatorioPDF(FPDF):
     def __init__(self, mes, ano):
         super().__init__()
@@ -100,12 +156,26 @@ def gerar_relatorio_mensal(mes, ano, totais, gastos_categoria, receitas_categori
     pdf = RelatorioPDF(mes, ano)
     pdf.add_page()
     
-    # === RESUMO FINANCEIRO ===
+    # === RESUMO FINANCEIRO COM GRÁFICO ===
     pdf.set_font('Helvetica', 'B', 14)
     pdf.set_text_color(0, 0, 0)
     pdf.cell(0, 10, 'RESUMO FINANCEIRO', ln=True)
     pdf.ln(3)
     
+    # Gera e insere gráfico rosca ao lado do resumo
+    grafico_path = None
+    if gastos_categoria and len(gastos_categoria) > 0:
+        try:
+            grafico_path = gerar_grafico_rosca(gastos_categoria)
+            if grafico_path:
+                # Salva posição atual
+                y_inicial = pdf.get_y()
+                # Insere gráfico no lado direito
+                pdf.image(grafico_path, x=140, y=y_inicial, w=60)
+        except Exception as e:
+            logger.error(f"Erro ao gerar gráfico: {e}")
+    
+    # Resumo financeiro à esquerda
     pdf.set_font('Helvetica', '', 11)
     
     receitas = float(totais.get('receitas', 0)) if totais else 0
@@ -129,6 +199,14 @@ def gerar_relatorio_mensal(mes, ano, totais, gastos_categoria, receitas_categori
     pdf.cell(0, 8, formatar_moeda(lucro), ln=True)
     
     pdf.set_text_color(0, 0, 0)
+    
+    # Remove arquivo temporário do gráfico
+    if grafico_path:
+        try:
+            os.unlink(grafico_path)
+        except:
+            pass
+    
     pdf.ln(8)
     
     # === DESPESAS POR CATEGORIA ===
