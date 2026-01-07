@@ -856,7 +856,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                         ${subcategoriasOptions}
                                     </select>
                                 </div>
-                                <div class="col-12 col-xl-4">
+                                <div class="col-12 col-xl-2">
                                     <input type="text" class="form-control form-control-sm" 
                                         name="estabelecimento_${index}" value="${dados.estabelecimento || ''}" placeholder="Estabelecimento">
                                 </div>
