@@ -119,6 +119,8 @@ class Config:
             'Manutenção',         # Reparos, equipamentos, peças
             'Gás',                # Gás de cozinha
             'Organização',        # Serviços administrativos e organização
+            'Música/Streaming',   # Spotify, Deezer, assinaturas de música
+            'Sistemas/Gestão',    # PDV, Colibri, PagSeguro, Stone, sistemas de gestão
             'Outros'
         ],
         'Pessoal': [

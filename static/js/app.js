@@ -176,6 +176,8 @@ document.addEventListener('DOMContentLoaded', function () {
             { value: 'Manutenção', label: '🔧 Manutenção' },
             { value: 'Gás', label: '🔥 Gás' },
             { value: 'Organização', label: '📁 Organização' },
+            { value: 'Música/Streaming', label: '🎵 Música/Streaming' },
+            { value: 'Sistemas/Gestão', label: '💻 Sistemas/Gestão' },
             { value: 'Outros', label: '📋 Outros' }
         ],
         'Pessoal': [
@@ -264,9 +266,11 @@ document.addEventListener('DOMContentLoaded', function () {
         { regex: /limpeza|higiene|detergente|desinfetante/i, categoria: 'Operacional', subcategoria: 'Limpeza' },
         { regex: /manuten[cç][aã]o|reparo|conserto|pe[cç]a/i, categoria: 'Operacional', subcategoria: 'Manutenção' },
         { regex: /g[aá]s|botij[aã]o|glp/i, categoria: 'Operacional', subcategoria: 'Gás' },
+        { regex: /spotify|deezer|apple\s*music|streaming|m[uú]sica\s*ambiente/i, categoria: 'Operacional', subcategoria: 'Música/Streaming' },
+        { regex: /maquininha|pagseguro|stone|cielo|getnet|rede|sumup|mercado\s*pago|taxa\s*cart[aã]o|colibri|pdv|totvs|linx/i, categoria: 'Operacional', subcategoria: 'Sistemas/Gestão' },
 
         // Pessoal
-        { regex: /sal[aá]rio|folha|pagamento|holerite/i, categoria: 'Pessoal', subcategoria: 'Salário' },
+        { regex: /sal[aá]rio|salario|folha|pagamento|holerite|beneficio|benef[ií]cio|vale\s*salarial/i, categoria: 'Pessoal', subcategoria: 'Salário' },
         { regex: /pro\s*labore|prolabore|s[oó]cio/i, categoria: 'Pessoal', subcategoria: 'Pro Labore' },
         { regex: /freelancer|aut[oô]nomo|prestador|(?<!pag\s)\bfree\b/i, categoria: 'Pessoal', subcategoria: 'Freelancer' },
         { regex: /gorjeta|tip|gratifica[cç][aã]o/i, categoria: 'Pessoal', subcategoria: 'Gorjeta' },

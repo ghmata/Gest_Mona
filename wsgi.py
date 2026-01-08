@@ -31,9 +31,8 @@ if os.path.isdir(project_home):
 # quando config.py e groq_service.py forem carregados
 # ============================================
 
-# Define API Key diretamente (fallback caso .env não funcione)
-os.environ.setdefault('GROQ_API_KEY', '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')
-os.environ.setdefault('SECRET_KEY', 'ILSHCFSDCSMNT310820010103201928062025')
+# NOTA: As chaves API devem estar no arquivo .env no servidor
+# NÃO inclua chaves hardcoded aqui - o GitHub bloqueia por segurança
 
 from dotenv import load_dotenv
 env_path = os.path.join(project_home, '.env')
@@ -41,7 +40,8 @@ if os.path.exists(env_path):
     load_dotenv(env_path)
     print(f"[WSGI] .env carregado de: {env_path}")
 else:
-    print(f"[WSGI] AVISO: .env não encontrado - usando valores padrao")
+    print(f"[WSGI] AVISO: .env não encontrado em: {env_path}")
+    print(f"[WSGI] Crie o arquivo .env com GROQ_API_KEY e SECRET_KEY")
 
 # Debug: verifica se GROQ_API_KEY foi carregada
 groq_key = os.environ.get('GROQ_API_KEY', '')
