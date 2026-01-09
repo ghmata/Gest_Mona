@@ -99,23 +99,24 @@ MONA_Controle_financeiro/
 ├── app.py              # Aplicação principal Flask
 ├── config.py           # Configurações
 ├── models.py           # Modelos SQLAlchemy
+├── wsgi.py             # Ponto de entrada WSGI (produção)
 ├── requirements.txt    # Dependências
+├── README.md           # Documentação
 ├── .env.example        # Template de variáveis
-├── services/
-│   ├── groq_service.py # OCR com Groq AI
-│   └── pdf_service.py  # Geração de PDF
-├── utils/
-│   ├── helpers.py      # Funções auxiliares
-│   └── pdf_converter.py# Conversão PDF→Imagem
-├── templates/
-│   ├── base.html       # Template base
-│   ├── home.html       # Tela inicial
-│   ├── receita.html    # Formulário receita
-│   └── dashboard.html  # Dashboard
-└── static/
-    ├── css/styles.css  # Estilos
-    ├── js/app.js       # JavaScript
-    └── uploads/        # Arquivos enviados
+│
+├── routes/             # Rotas Flask (blueprints)
+├── services/           # Serviços (OCR Groq, PDF)
+├── templates/          # Templates HTML
+├── static/             # CSS, JS, uploads
+├── utils/              # Funções auxiliares
+├── tests/              # Testes automatizados
+│
+├── scripts/            # Scripts de administração
+│   ├── criar_admin.py  # Cria usuário admin
+│   └── popular_banco.py# Popula banco com dados demo
+│
+└── docs/               # Documentação de desenvolvimento
+    └── prompts/        # Prompts usados no desenvolvimento
 ```
 
 ## 🏷️ Categorias

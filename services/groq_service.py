@@ -669,7 +669,7 @@ Por exemplo: se o nome contém "energia", classifique como "Energia"; se contém
             ('banda', 'Pessoal', 'DJ/Músicos'),
             ('som ao vivo', 'Pessoal', 'DJ/Músicos'),
             ('hora extra', 'Pessoal', 'Hora Extra'),
-            ('he ', 'Pessoal', 'Hora Extra'),
+            ('extra', 'Pessoal', 'Hora Extra'),
             ('pro labore', 'Pessoal', 'Pro Labore'),
             ('prolabore', 'Pessoal', 'Pro Labore'),
             ('salario', 'Pessoal', 'Salário'),

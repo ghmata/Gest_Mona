@@ -3,6 +3,7 @@
 venv/
 __pycache__/
 *.pyc
+.pytest_cache/
 
 # Banco de dados
 instance/
@@ -15,3 +16,11 @@ static/uploads/*
 # IDE
 .vscode/
 .idea/
+
+# Arquivos temporários
+*.log
+*.tmp
+*.bak
+
+# Agente AI (não versionar)
+.agent/
